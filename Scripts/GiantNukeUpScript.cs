@@ -15,7 +15,11 @@ namespace Scripts
     [Serializable]
     public class GiantNukeUpScript : BulletScriptable
     {
-        public GiantNukeUpScript(BulletExt owner) : base(owner) { }
+        public GiantNukeUpScript(BulletExt owner) : base(owner)
+        {
+            
+        }
+        
 
         double factor = 1.0;
         static Pointer<AnimTypeClass> pAnimType => AnimTypeClass.ABSTRACTTYPE_ARRAY.Find("TWLT070");

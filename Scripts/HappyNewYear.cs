@@ -169,14 +169,14 @@ namespace Scripts
             }
         }
 
-        //public override void OnPut(CoordStruct coord, Direction faceDir)
-        //{
+        // public override void OnPut(CoordStruct coord, Direction faceDir)
+        // {
         //    Pointer<BulletClass> pBullet = Owner.OwnerObject;
         //    pBullet.Ref.Velocity = new BulletVelocity(0, 0, 1000);
-        //}
+        // }
 
-        //public override void OnRemove()
-        //{
+        // public override void OnRemove()
+        // {
         //    for (int i = 0; i < FX_SYSTEM_COUNT; i++)
         //    {
         //        if (fxSystems[i] != null)
@@ -186,6 +186,6 @@ namespace Scripts
         //            Console.WriteLine($"{fxSystem} remove!");
         //        }
         //    }
-        //}
+        // }
     }
 }

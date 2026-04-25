@@ -14,6 +14,7 @@ using Extension.Decorators;
 using Extension.Utilities;
 using System.Threading.Tasks;
 using System.Linq;
+using Extension.Components;
 using System.Reflection;
 using System.Windows.Forms;
 using Extension;
@@ -49,7 +50,7 @@ namespace Miscellaneous
             {
 	            string section = "#include";
 	            int length = pINI.Ref.GetKeyCount(section);
-                INIReader reader = new INIFileReader(pINI);
+                INIReader reader = new INIReader(pINI);
                 for (int i = 0; i < length; i++)
                 {
 		            string key = pINI.Ref.GetKeyName(section, i);
@@ -405,8 +406,35 @@ namespace Miscellaneous
 
         static public void RefreshINIComponent()
         {
-            Ini.ClearBuffer();
+            INIComponent.ClearBuffer();
 
+            void RefreshINIComponents<TExt, TBase>(GOInstanceExtension<TExt, TBase> ext) where TExt : Extension<TBase>
+            {
+                INIComponent[] components = ext.GameObject.GetComponentsInChildren<INIComponent>();
+                if (components.Length > 0)
+                {
+                    foreach (var component in components)
+                    {
+                        component.ReRead();
+                    }
+                }
+            }
+
+            void Refresh<TExt, TBase>(Container<TExt, TBase> container, ref DynamicVectorClass<Pointer<TBase>> dvc) where TExt : GOInstanceExtension<TExt, TBase>
+            {
+                Logger.Log("refreshing {0}'s INIComponents...", typeof(TExt).Name);
+                foreach (var pItem in dvc)
+                {
+                    var ext = container.Find(pItem);
+                    RefreshINIComponents(ext);
+                }
+            }
+
+            Refresh(TechnoExt.ExtMap, ref TechnoClass.Array);
+            Refresh(BulletExt.ExtMap, ref BulletClass.Array);
+#if USE_ANIM_EXT
+            Refresh(AnimExt.ExtMap, ref AnimClass.Array);
+#endif
         }
 
         private static int oldSpeed = 1;
@@ -420,6 +448,7 @@ namespace Miscellaneous
             Pointer<int> curGameSpeed = new Pointer<int>(0x887350);
             curGameSpeed.Ref = 0;
             GameOptionsClass.Instance.GameSpeed = oldSpeed;
+            Logger.Log("---------------------ResumeGame------------------------------");
         }
 
         private static List<CodeWatcher> watchers = new();

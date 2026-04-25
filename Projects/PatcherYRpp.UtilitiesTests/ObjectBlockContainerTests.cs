@@ -56,7 +56,7 @@ namespace PatcherYRpp.Utilities.Tests
             dvc[0].Ref.SetVirtualFunctionPointer(18, Marshal.GetFunctionPointerForDelegate(dlg));
             var ret = dvc[0].Ref.Base.GetCoords();
 
-            ObjectBlockContainer container = new ObjectBlockContainer(dvc.GetThisPointer(), 11, 5000, 5000);
+            ObjectBlockContainer container = new ObjectBlockContainer(objectArrayPointer: dvc.GetThisPointer(), blockLength: 11, mapWidth: 5000, mapHeight: 5000);
 
             List<Pointer<ObjectClass>> BruteFindObjectsNear(CoordStruct location, int range)
             {

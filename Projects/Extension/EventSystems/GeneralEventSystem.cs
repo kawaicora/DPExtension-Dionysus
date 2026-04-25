@@ -3,9 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PatcherYRpp;
 
 namespace Extension.EventSystems
 {
+    public class GameBootEvent: EventBase
+    {
+        public override string Name => "GameBoot";
+        public override string Description => "Raised when game boot";
+    }
+    public class LogicInitEvent : EventBase
+    {
+        public override string Name => "LogicInitEvent";
+        public override string Description => "Raised when logic is init";
+    }
     public class ScenarioClearClassesEvent : EventBase
     {
         public override string Name => "ScenarioClearClasses";
@@ -39,13 +50,20 @@ namespace Extension.EventSystems
 
         public GeneralEventSystem()
         {
+            GameBootEvent = new GameBootEvent();
             ScenarioClearClassesEvent = new ScenarioClearClassesEvent();
             ScenarioStartEvent = new ScenarioStartEvent();
             LogicClassUpdateEvent = new LogicClassUpdateEvent();
+            LogicInitEvent = new LogicInitEvent();
         }
 
         public ScenarioClearClassesEvent ScenarioClearClassesEvent { get; }
+        public LogicInitEvent LogicInitEvent { get; }
         public ScenarioStartEvent ScenarioStartEvent { get; }
         public LogicClassUpdateEvent LogicClassUpdateEvent { get; }
+
+        public GameBootEvent GameBootEvent { get; }
     }
+
+    
 }

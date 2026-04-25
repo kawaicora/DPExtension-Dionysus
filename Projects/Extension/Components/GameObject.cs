@@ -24,7 +24,7 @@ namespace Extension.Components
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        Component[] GetComponents(Predicate<Component> predicate);
+        Component[] GetComponents(Func<Component, bool> predicate);
         Component[] GetComponents();
         Component[] GetComponents(Type type);
         TComponent[] GetComponents<TComponent>() where TComponent : Component;
@@ -45,7 +45,7 @@ namespace Extension.Components
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        Component[] GetComponentsInChildren(Predicate<Component> predicate);
+        Component[] GetComponentsInChildren(Func<Component, bool> predicate);
         Component[] GetComponentsInChildren();
         Component[] GetComponentsInChildren(Type type);
         TComponent[] GetComponentsInChildren<TComponent>() where TComponent : Component;
@@ -66,7 +66,7 @@ namespace Extension.Components
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        Component[] GetComponentsInParent(Predicate<Component> predicate);
+        Component[] GetComponentsInParent(Func<Component, bool> predicate);
         Component[] GetComponentsInParent();
         Component[] GetComponentsInParent(Type type);
         TComponent[] GetComponentsInParent<TComponent>() where TComponent : Component;
@@ -87,44 +87,45 @@ namespace Extension.Components
     [Serializable]
     public sealed class GameObject : Component, IGameObject
     {
-        internal GameObject(string name) : base(0)
+        public GameObject(string name) : base(0)
         {
             Name = name;
-
             _unstartedComponents = new List<Component>();
             _unstartedComponents.Add(this);
-
             _coroutineSystem = new CoroutineSystem();
         }
-
-        public override Transform Transform => _transform;
 
         internal event Action OnAwake;
 
         public override void Awake()
         {
             base.Awake();
-
             OnAwake?.Invoke();
+
         }
 
+
+        public override void Start()
+        {
+            base.Start();
+
+        }
         public override void OnUpdate()
         {
             base.OnUpdate();
 
-            int count = _unstartedComponents.Count;
-            for (int i = 0; i < count; i++)
+            if (_unstartedComponents.Count > 0)
             {
-                _unstartedComponents[i].EnsureStarted();
-            }
-            if (count > 0)
-            {
-                _unstartedComponents.RemoveRange(0, count);
+                Component.ForeachComponents(_unstartedComponents, c => c.EnsureStarted());
+                _unstartedComponents.Clear();
             }
 
             _coroutineSystem.Update();
         }
-
+        public override void OnRender()
+        {
+            base.OnRender();
+        }
         /// <summary>
         /// return myself and ensure awaked
         /// </summary>
@@ -174,25 +175,13 @@ namespace Extension.Components
         {
             component.DetachFromParent();
         }
-
+       
         public static void Destroy(GameObject gameObject)
         {
             Component.Destroy(gameObject);
         }
 
-        internal void AddComponentNotAwake(Component component)
-        {
-            base.AddComponent(component);
-            _unstartedComponents.Add(component);
-        }
-
-        internal void SetTransform(Transform transform)
-        {
-            _transform = transform;
-        }
-
-        private List<Component> _unstartedComponents;
+        List<Component> _unstartedComponents;
         private CoroutineSystem _coroutineSystem;
-        private Transform _transform;
     }
 }

@@ -7,16 +7,13 @@
     "System.Windows.Forms.dll",
     "System.Drawing.dll",
     "System.Numerics.dll",
-
     "PatcherYRpp.dll",
     "PatcherYRpp.Utilities.dll",
     "Extension.dll",
-    "Extension.Ext.dll",
-    "Extension.Script.dll",
     "Extension.FX.dll",
     "Extension.Lua.dll",
     "ScriptUniversal.dll",
-
+    "Newtonsoft.Json.dll",
     "Microsoft.VisualStudio.Interop.dll",
     "XLua.Mini"
   ],
@@ -24,17 +21,17 @@
     "_USE_ANIM_EXT",
     "_USE_CELL_EXT",
 
-    "REALTIME_INI",
+    "_REALTIME_INI",
 
     "FX_ENABLE",
-    "_FX_USED3D",
+    "FX_USED3D",
     "_FX_TOFIX",
     "_FX_CNCDDRAW"
   ],
   "show_hidden": false,
   "load_temp_file_in_memory": false,
   "emit_pdb": true,
-  "force_compile": false,
+  "force_compile": true,
   "pack_assembly": true,
   "optimization_level": "debug"
 }

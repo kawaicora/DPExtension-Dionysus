@@ -7,17 +7,6 @@ using System.Threading.Tasks;
 
 namespace Extension.Script
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public sealed class ScriptAliasAttribute : Attribute
-    {
-        public ScriptAliasAttribute(params string[] names)
-        {
-            Names = names;
-        }
-
-        public string[] Names { get; }
-    }
-
     public interface IHaveScript
     {
         List<Script> Scripts { get; }
@@ -26,7 +15,7 @@ namespace Extension.Script
     [Serializable]
     public class Script
     {
-        internal Script(string name)
+        public Script(string name)
         {
             Name = name;
         }

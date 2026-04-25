@@ -27,7 +27,7 @@ namespace Extension.Serialization
             return GetObject(id);
         }
 
-        public EventHandler SaveGameHandler => OnSaveGame;
+        public EventHandler SaveGameHandler  => OnSaveGame;
         public EventHandler LoadGameHandler => OnLoadGame;
 
 
@@ -39,7 +39,6 @@ namespace Extension.Serialization
         private void OnSaveGame(object sender, EventArgs e)
         {
             var args = (SaveGameEventArgs)e;
-
             if (args.IsStart)
             {
                 CreateSaveFile(args.FileName);
@@ -111,24 +110,21 @@ namespace Extension.Serialization
 
             return obj;
         }
-
+        
         private string GetSavePath(string name)
         {
-            string saveDir;
-            if (name.Contains("Saved Games"))
-            {
-                saveDir = GlobalVars.RootDirectory;
-            }
-            else
-            {
-                saveDir = Path.Combine(GlobalVars.RootDirectory, "Saved Games");
-            }
+            
+            string saveDir = Path.Combine(GlobalVars.RootDirectory, "Saved Games");
             if (!Directory.Exists(saveDir))
             {
                 Directory.CreateDirectory(saveDir);
             }
             string fileName = Path.ChangeExtension(name, "gs.data");
-            return Path.Combine(saveDir, fileName);
+            fileName = fileName.Replace("Saved Games\\","");
+            string savePath = Path.Combine(saveDir, fileName);
+            
+            Logger.Log($"GetSavePath {savePath}");
+            return savePath;
         }
 
         private void CreateSaveFile(string name)

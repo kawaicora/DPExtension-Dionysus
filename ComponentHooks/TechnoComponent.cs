@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ComponentHooks
 {
@@ -21,7 +22,7 @@ namespace ComponentHooks
 
                 TechnoExt ext = TechnoExt.ExtMap.Find(pTechno);
                 ext.GameObject.Foreach(c => c.OnUpdate());
-
+                TechnoExt.Update?.Invoke(ext);
                 return 0;
             }
             catch (Exception e)
@@ -40,7 +41,7 @@ namespace ComponentHooks
 
                 TechnoExt ext = TechnoExt.ExtMap.Find(pTechno);
                 ext.GameObject.Foreach(c => c.OnLateUpdate());
-
+                TechnoExt.LateUpdate?.Invoke(ext);
                 return 0;
             }
             catch (Exception e)
@@ -142,7 +143,7 @@ namespace ComponentHooks
             {
                 TechnoExt ext = TechnoExt.ExtMap.Find(pTechno);
                 ext.GameObject.Foreach(c => c.OnRender());
-
+                TechnoExt.Render?.Invoke(ext);
                 return 0;
             }
             catch (Exception e)

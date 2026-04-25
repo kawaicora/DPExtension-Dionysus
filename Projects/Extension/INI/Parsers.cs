@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Extension.INI.YRParsers;
 using Extension.Utilities;
 using PatcherYRpp;
 
@@ -14,11 +15,18 @@ namespace Extension.INI
 
         static Parsers()
         {
-            new NormalParser().Register();
-            new ScriptParser().Register();
-
-            YRParsers.Register();
+            NormalParser.Register();
+            ScriptParser.Register();
+            SuperWeaponTypeClassParser.Register();
+            WeaponTypeClassParser.Register();
+            TechnoTypeClassParser.Register();
         }
+
+        public static NormalParser NormalParser = new NormalParser();
+        public static ScriptParser ScriptParser = new ScriptParser();
+        public static SuperWeaponTypeClassParser SuperWeaponTypeClassParser = new SuperWeaponTypeClassParser();
+        public static WeaponTypeClassParser WeaponTypeClassParser = new WeaponTypeClassParser();
+        public static TechnoTypeClassParser TechnoTypeClassParser = new TechnoTypeClassParser();
 
         public static EnumParser<T> GetEnumParser<T>() where T : struct, Enum => EnumParser<T>.Parser;
         public static IParser<T> GetEnumParserUnsafe<T>() => EnumParsers.GetParser<T>();

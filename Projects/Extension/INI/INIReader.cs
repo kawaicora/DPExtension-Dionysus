@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PatcherYRpp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,17 +7,15 @@ using System.Threading.Tasks;
 
 namespace Extension.INI
 {
-    public interface INonaggressiveReader
+    public class INIReader
     {
-        bool Read<T>(string section, string key, ref T buffer, IParser<T> parser = null);
-        bool ReadArray<T>(string section, string key, ref T[] buffer, int count = -1, IParser<T> parser = null);
-        bool ReadCollection<T, TCollection>(string section, string key, ref TCollection buffer, IParser<T> parser = null) where TCollection : ICollection<T>;
+        Pointer<CCINIClass> IniFile;
+        byte[] readBuffer = new byte[2048];
 
-        bool HasSection(string section);
-    }
-
-    public abstract class INIReader : INonaggressiveReader
-    {
+        public INIReader(Pointer<CCINIClass> pINI)
+        {
+            IniFile = pINI;
+        }
 
         public Encoding Encoding { get; set; } = Encoding.UTF8;
 
@@ -76,40 +75,42 @@ namespace Extension.INI
         /// <param name="list"></param>
         /// <param name="parser"></param>
         /// <returns></returns>
-        public bool ReadList<T, TList>(string section, string key, ref TList buffer, IParser<T> parser = null) where TList : IList<T>
-        {
-            return ReadCollection(section, key, ref buffer, parser);
-        }
-
-        /// <summary>
-        /// read data into collection
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="section"></param>
-        /// <param name="key"></param>
-        /// <param name="list"></param>
-        /// <param name="parser"></param>
-        /// <returns></returns>
-        public bool ReadCollection<T, TCollection>(string section, string key, ref TCollection buffer, IParser<T> parser = null) where TCollection : ICollection<T>
+        public bool ReadList<T>(string section, string key, ref List<T> buffer, IParser<T> parser = null)
         {
             parser ??= Parsers.GetParser<T>();
 
             if (ReadString(section, key, out string val))
             {
-                return parser.ParseCollection(val, ref buffer);
+                return parser.ParseList(val, ref buffer);
             }
 
             return false;
         }
 
-        /// <summary>
-        /// Test if has ini section
-        /// </summary>
-        /// <param name="section"></param>
-        /// <returns></returns>
-        public abstract bool HasSection(string section);
 
-        protected abstract bool ReadString(string section, string key, out string val);
 
+        private string GetString()
+        {
+            string str = Encoding.GetString(readBuffer);
+            str = str.Substring(0, str.IndexOf('\0'));
+            str = str.Trim();
+
+            return str;
+        }
+        private int ReadBuffer(string section, string key)
+        {
+            return IniFile.Ref.ReadString(section, key, "", readBuffer, readBuffer.Length);
+        }
+        private bool ReadString(string section, string key, out string buffer)
+        {
+            if (ReadBuffer(section, key) > 0)
+            {
+                buffer = GetString();
+                return true;
+            }
+
+            buffer = null;
+            return false;
+        }
     }
 }

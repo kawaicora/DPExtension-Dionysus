@@ -12,7 +12,6 @@ using Extension.Serialization;
 using Extension.Utilities;
 using PatcherYRpp;
 using PatcherYRpp.Utilities;
-using Extension.Script;
 
 namespace Miscellaneous
 {
@@ -40,14 +39,13 @@ namespace Miscellaneous
             RunClassConstructor(typeof(MainSerializer));
 
             RunClassConstructor(typeof(INIConstant));
-            RunClassConstructor(typeof(INIBufferPreloader));
+            RunClassConstructor(typeof(INIComponent));
+
         }
 
         static void AddEventSystemHandlers()
         {
             EventSystem.PointerExpire.AddPermanentHandler(EventSystem.PointerExpire.AnnounceExpiredPointerEvent, ObjectFinderHandler);
-
-            EventSystem.SaveGame.AddPermanentHandler(EventSystem.SaveGame.LoadGameEvent, ScriptManagerHandler);
         }
 
         private static void ObjectFinderHandler(object sender, EventArgs e)
@@ -67,15 +65,5 @@ namespace Miscellaneous
             //Logger.Log("invoke AnnounceExpiredPointer({0}, {1})", DebugUtilities.GetAbstractID(pAbstract), removed);
         }
 
-        private static void ScriptManagerHandler(object sender, EventArgs e)
-        {
-            var args = (LoadGameEventArgs)e;
-
-            if (args.IsStart)
-            {
-                RunClassConstructor(typeof(ScriptManager));
-                EventSystem.SaveGame.RemovePermanentHandler(EventSystem.SaveGame.LoadGameEvent, ScriptManagerHandler);
-            }
-        }
     }
 }

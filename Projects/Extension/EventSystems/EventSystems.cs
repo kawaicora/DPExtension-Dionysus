@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Extension.Ext;
 
 namespace Extension.EventSystems
 {
@@ -21,10 +22,14 @@ namespace Extension.EventSystems
         static EventSystem()
         {
             General = new GeneralEventSystem();
+            
             General.AddPermanentHandler(General.ScenarioClearClassesEvent, (sender, e) =>
             {
                 OnClearTemporaryHandler?.Invoke(sender, e);
             });
+            General.AddPermanentHandler(General.ScenarioStartEvent,SessionExt.OnScenarioStart);
+            EventSystem.General.AddPermanentHandler(EventSystem.General.LogicClassUpdateEvent, SessionExt.OnLogicClassUpdate);
+            EventSystem.General.AddPermanentHandler(EventSystem.General.ScenarioClearClassesEvent, SessionExt.OnScenarioClearClasses);
             PointerExpire = new PointerExpireEventSystem();
             SaveGame = new SaveGameEventSystem();
         }

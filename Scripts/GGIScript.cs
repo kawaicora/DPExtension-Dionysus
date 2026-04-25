@@ -28,6 +28,7 @@ namespace Scripts
                     pTargetExt.GameObject.CreateScriptComponent(nameof(MissileFall), MissileFall.UniqueID, "Missile Fall Decorator", pTargetExt, this, weaponIndex != 0);
                 }
             }
+            Logger.Log("GGI Fire");
         }
     }
 

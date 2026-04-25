@@ -109,7 +109,7 @@ namespace PatcherYRpp.Utilities
             int x = id.X + xLength / 2;
             int y = id.Y + yLength / 2;
 
-            return x >= 0 && y >= 0 && x < xLength && y < yLength ? Blocks[x, y] : OuterBlock;
+            return x < xLength && y < yLength ? Blocks[x, y] : OuterBlock;
         }
 
         public void ClearObjects()
@@ -129,7 +129,7 @@ namespace PatcherYRpp.Utilities
             ClearObjects();
 
             ref var objects = ref ObjectArray;
-
+          
             foreach (Pointer<ObjectClass> pObject in objects)
             {
                 CellStruct objectLoc = CellClass.Coord2Cell(pObject.Ref.Base.GetCoords());

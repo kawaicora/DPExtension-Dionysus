@@ -15,17 +15,7 @@ namespace ExtensionHooks
         {
             return Network.Network_RespondToEvent_Behaviors(R);
         }
-
-        // [Hook(HookType.AresHook, Address = 0x4C6CCD, Size = 0)]
-        // public static unsafe uint Network_RespondToEvent_Behaviors_Ex(REGISTERS* R)
-        // {
-        //     return Network.Network_RespondToEvent_Behaviors_Ex(R);
-            
-            
-        // }
         
-        
-
         [Hook(HookType.AresHook, Address = 0x64BE7D, Size = 0x6)]
         // [UnmanagedCallersOnly(EntryPoint = "Network_GetEventSize1_Behaviors", CallConvs = [typeof(CallConvCdecl)])]
         public static unsafe uint Network_GetEventSize1_Behaviors(REGISTERS* R)

@@ -1123,8 +1123,8 @@ namespace Extension.CoraExtension
         {
             var cell = DisplayClass.Display_ZoneCell;
             Pointer<SuperWeaponTypeClass> pSWType = SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Find(sSuperWeaponName);
-            EventClass eventClass = EventClass.EventClass_CTOR();
-            Pointer<EventClass> pEvent1 =  eventClass.EventClass_SpecialPlace(HouseClass.Player.Data.ArrayIndex,NetworkEvents.SpecialPlace,(int)pSWType.Ref.Type,ref cell);
+      
+            Pointer<EventClass> pEvent1 =  EventClass.EventClass_CTOR().EventClass_SpecialPlace(HouseClass.Player.Data.ArrayIndex,NetworkEvents.SpecialPlace,(int)pSWType.Ref.Type,ref cell);
             EventClass.AddEvent(pEvent1.Ref);
             PrintMessage($"发送发射{SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Find(sSuperWeaponName).Convert<AbstractTypeClass>().Ref.UIName} 地图坐标  X:{DisplayClass.Display_ZoneCell.X} Y:{DisplayClass.Display_ZoneCell.Y}的事件");
         }
@@ -1146,51 +1146,9 @@ namespace Extension.CoraExtension
                 pTechnoType.Ref.IsNaval 
             );
             EventClass.AddEvent(pEvent1.Ref);
-            
             CoraUtils.Log($"发送生产事件: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType}");
             
         }
-        public static void SendPlaceEvent(string ID){
-            Pointer<TechnoTypeClass> pTechnoType = TechnoTypeClass.ABSTRACTTYPE_ARRAY.Find(ID);
-            AbstractType abstractType = pTechnoType.Convert<AbstractClass>().Ref.WhatAmI();
-            var cell = DisplayClass.Display_ZoneCell;
-            int nIsNaval = pTechnoType.Ref.IsNaval ? 1 : 0;
-            string sUnitName = pTechnoType.Convert<AbstractTypeClass>().Ref.UIName;
-            switch (abstractType)
-            {
-                case AbstractType.Unit:
-                case AbstractType.UnitType:
-                case AbstractType.Aircraft:
-                case AbstractType.AircraftType:
-                case AbstractType.Infantry:
-                case AbstractType.InfantryType:
-                case AbstractType.Building:
-                case AbstractType.BuildingType:
-                    {
-
-                        
-                        
-                        var pEvent2 = EventClass.EventClass_CTOR().EventClass_Place(
-                            HouseClass.Player.Data.ArrayIndex,
-                            NetworkEvents.Place,
-                            abstractType,
-                            TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, ID),
-                            nIsNaval,
-                            ref cell
-                        );
-                        
-                        EventClass.AddEvent(pEvent2.Ref);
-                        
-                    }
-                break;
-
-                default:
-                    CoraUtils.Log($"发送放置事件失败: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType} 被忽略的类型:{abstractType}");
-                break;
-            }
-            CoraUtils.Log($"发送放置事件: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType}");
-        }
-
      
         public static void SendCoraPlaceEventEx(string ID)
         {
@@ -1212,10 +1170,10 @@ namespace Extension.CoraExtension
                     case AbstractType.Building:
                     case AbstractType.BuildingType:
            
-                        var event1 = EventClass.EventClass_CTOR();
-                        event1.Type = (NetworkEvents)CoraNetworkEvents.CoraPlace;
-                        event1.HouseIndex = (byte)HouseClass.Player.Data.ArrayIndex;
-                        event1.Data = new EventData
+                        var pEvent1 = EventClass.EventClass_CTOR();
+                        pEvent1.Type = (NetworkEvents)CoraNetworkEvents.CoraPlace;
+                        pEvent1.HouseIndex = (byte)HouseClass.Player.Data.ArrayIndex;
+                        pEvent1.Data = new EventData
                         {
                             Place = new Place
                             {
@@ -1226,9 +1184,8 @@ namespace Extension.CoraExtension
                                 ExtraData = 0
                             }
                         };
-                        event1.Frame = CoraUtils.TotalFramesElapsed;
-                        EventClass.AddEvent(event1);
-                       
+                        pEvent1.Frame = CoraUtils.TotalFramesElapsed;
+                        EventClass.AddEvent(pEvent1);
                     break;
                     default:
                         CoraUtils.Log($"发送自定义放置事件失败: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType} 被忽略的类型:{abstractType}");
@@ -1250,10 +1207,10 @@ namespace Extension.CoraExtension
             {
                 string nickname = "可乐";
                 string msg = "咕咕嘎嘎";
-                var event1 = EventClass.EventClass_CTOR();
-                event1.Type = (NetworkEvents)CoraNetworkEvents.CoraDanmu;
-                event1.HouseIndex = (byte)HouseClass.Player.Data.ArrayIndex;
-                event1.Data = new EventData
+                var pEvent = EventClass.EventClass_CTOR();
+                pEvent.Type = (NetworkEvents)CoraNetworkEvents.CoraDanmu;
+                pEvent.HouseIndex = (byte)HouseClass.Player.Data.ArrayIndex;
+                pEvent.Data = new EventData
                 {
                     Danmu = new Danmu
                     {
@@ -1263,8 +1220,8 @@ namespace Extension.CoraExtension
 
                     }
                 };
-                event1.Frame = CoraUtils.TotalFramesElapsed;
-                EventClass.AddEvent(event1);
+                pEvent.Frame = CoraUtils.TotalFramesElapsed;
+                EventClass.AddEvent(pEvent);
             }catch (Exception ex)
             {
                 Logger.PrintException(ex);

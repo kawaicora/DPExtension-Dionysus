@@ -55,7 +55,32 @@ namespace Extension.Ext
 
             return 0;
         }
+        // public static unsafe uint Network_RespondToEvent_Behaviors_Ex(REGISTERS*  r)
+        // {
+        //     try
+        //     {
+        //         Pointer<EventClass> pEvent = (nint)r->ESI;
+        //         var eventType = (byte)pEvent.Ref.Type;
+        //         Logger.Log($"Respond To Event: 0x{eventType:X2}");
+        //         if (NetworkHandles.TryGetValue(eventType, out var handler))
+        //         {
+        //             handler.Respond(pEvent);
+        //         }
 
+        //         uint EventKind = r->EAX;
+        //         --EventKind;
+        //         r->EAX = EventKind;
+        //         return (EventKind > 0x2D) ? (uint)0x4C8109 : (uint)0x4C6CD7;
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         Logger.PrintException(e);
+        //         r->EAX = r->EAX - 1;
+        //         return (uint)0x4C8109;
+        //     }
+            
+            
+        // }
 
         public static unsafe uint Network_GetEventSize1_Behaviors(REGISTERS*  r)
         {

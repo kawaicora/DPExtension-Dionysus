@@ -78,5 +78,17 @@ namespace Extension.Ext
             HouseExt.ExtMap.SaveStatic();
             return 0;
         }
+
+        public static unsafe uint HouseClass_CanBuild(REGISTERS* r)
+        {
+            bool bForceCanBuild = false;
+            if (bForceCanBuild)
+            {
+                return 0x4E7BE2;
+            }else
+            {
+                return 0x0;
+            }
+        }
     }
 }

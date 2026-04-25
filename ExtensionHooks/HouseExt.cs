@@ -42,5 +42,12 @@ namespace ExtensionHooks
         {
             return HouseExt.HouseClass_Save_Suffix(R);
         }
+
+
+        [Hook(HookType.AresHook, Address = 0x4F787D, Size = 4)]
+        public static unsafe UInt32 HouseClass_CanBuild(REGISTERS* R)
+        {
+            return HouseExt.HouseClass_CanBuild(R);
+        }
     }
 }

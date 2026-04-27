@@ -64,6 +64,7 @@
     <Compile Include="CoraExtension\SystemUtils.cs" />
     
     <Compile Include="CoraExtension\DanmuWebsocket.cs" />
+    <Compile Include="CoraExtension\CoraEvent.cs" />
     <Compile Include="CoraExtension\CoraUtils.cs" />
     <Compile Include="CoraExtension\DebugLog.cs" />
     <Compile Include="CoraExtension\GlobalHotkey.cs" />

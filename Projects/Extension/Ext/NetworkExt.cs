@@ -42,7 +42,7 @@ namespace Extension.Ext
             {
                 Pointer<EventClass> pEvent = (nint)r->ECX;
                 var eventType = (byte)pEvent.Ref.Type;
-                Logger.Log($"Respond To Event: 0x{eventType:X2}");
+                Logger.Log($"Respond To Event: 0x{eventType:X2} {(NetworkEvents)eventType}");
                 if (NetworkHandles.TryGetValue(eventType, out var handler))
                 {
                     handler.Respond(pEvent);

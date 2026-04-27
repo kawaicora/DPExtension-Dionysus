@@ -107,6 +107,13 @@ namespace GeneralHooks
             return 0;
         }
 
+        
+        
+        [Hook(HookType.AresHook, Address = 0x64CCBF, Size = 0x6)]
+        static public unsafe UInt32 DoList_ReplaceReconMessage(REGISTERS* R)
+        {
+            return 0;
+        }
 
         [Hook(HookType.AresHook, Address = 0x643C62, Size = 0x6)]
         
@@ -114,14 +121,7 @@ namespace GeneralHooks
         {
             return 0;
         }
-        // [Hook(HookType.AresHook, Address = 0x4FAA10, Size = 5)]
-        // public static unsafe UInt32 Unk4FAA10(REGISTERS* R)
-        // {
-        //     Logger.Log("4FAA10 Hooked");
-        //     return 0;
-        // }
-        
-
+       
 
         [Hook(HookType.AresHook, Address = 0x6931F1, Size = 0x8)]
         static public unsafe UInt32 LMouseDown(REGISTERS* R)

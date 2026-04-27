@@ -23,7 +23,7 @@ namespace GeneralHooks
         private static void MathExHandler(object sender, EventArgs e)
         {
             // ensure network synchronization
-            MathEx.SetRandomSeed(new Random().Next(3200000,6400000));
+            MathEx.SetRandomSeed(0);
             Logger.Log("set random seed!");
         }
 

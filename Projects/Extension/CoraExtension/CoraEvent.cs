@@ -2,6 +2,7 @@ using System;
 using System.Runtime.ExceptionServices;
 using Extension.Ext;
 using PatcherYRpp;
+using PatcherYRpp.Utilities;
 
 namespace Extension.CoraExtension
 {
@@ -20,7 +21,7 @@ namespace Extension.CoraExtension
         }
         public static void RegisterEvent()
         {
-             #region 网络事件注册
+            // #region 网络事件注册
             PlaceEventRsp placeEventRsp = new PlaceEventRsp();
             Network.NetworkHandles.Add(placeEventRsp.Index, placeEventRsp);
             ProductEventRsp productEventRsp = new ProductEventRsp();
@@ -29,20 +30,20 @@ namespace Extension.CoraExtension
             Network.NetworkHandles.Add(abandonEventRsp.Index, abandonEventRsp);
             AbandonAllEventRsp abandonAllEventRsp = new AbandonAllEventRsp();
             Network.NetworkHandles.Add(abandonAllEventRsp.Index, abandonAllEventRsp);
-            FrameInfoEventRsp frameInfoEventRsp = new FrameInfoEventRsp();
-            Network.NetworkHandles.Add(frameInfoEventRsp.Index,frameInfoEventRsp);
+            // FrameInfoEventRsp frameInfoEventRsp = new FrameInfoEventRsp();
+            // Network.NetworkHandles.Add(frameInfoEventRsp.Index,frameInfoEventRsp);
             SpecialPlaceEventRsp specialPlaceEventRsp = new SpecialPlaceEventRsp();
             Network.NetworkHandles.Add(specialPlaceEventRsp.Index,specialPlaceEventRsp);
-            MegamissionEventRsp megamissionEventRsp = new MegamissionEventRsp();
-            Network.NetworkHandles.Add(megamissionEventRsp.Index,megamissionEventRsp);
-            DeployEventRsp deployEventRsp = new DeployEventRsp();
-            Network.NetworkHandles.Add(deployEventRsp.Index,deployEventRsp);
+            // MegamissionEventRsp megamissionEventRsp = new MegamissionEventRsp();
+            // Network.NetworkHandles.Add(megamissionEventRsp.Index,megamissionEventRsp);
+            // DeployEventRsp deployEventRsp = new DeployEventRsp();
+            // Network.NetworkHandles.Add(deployEventRsp.Index,deployEventRsp);
             
-            TimingEventRsp timingEventRsp  = new TimingEventRsp();
-            Network.NetworkHandles.Add(timingEventRsp.Index,timingEventRsp);
-            ProcessTimeEventRsp processTimeEventRsp = new ProcessTimeEventRsp();
-            Network.NetworkHandles.Add(processTimeEventRsp.Index,processTimeEventRsp);
-            #endregion
+            // TimingEventRsp timingEventRsp  = new TimingEventRsp();
+            // Network.NetworkHandles.Add(timingEventRsp.Index,timingEventRsp);
+            // ProcessTimeEventRsp processTimeEventRsp = new ProcessTimeEventRsp();
+            // Network.NetworkHandles.Add(processTimeEventRsp.Index,processTimeEventRsp);
+            // #endregion
             #region 自定义事件
             CoraPlaceEventRsp coraPlaceEventRsp = new CoraPlaceEventRsp();
             Network.NetworkHandles.Add(coraPlaceEventRsp.Index,coraPlaceEventRsp);
@@ -467,15 +468,14 @@ namespace Extension.CoraExtension
         {
             // 在这里处理接收到的事件
             var data = pArg.Ref;
-            // pFactory.Ref.CompletedProduction();
             // 可以通过 pEvent 获取发送方信息
             var senderHouseIndex = pEvent.Ref.HouseIndex;
             var frame = pEvent.Ref.Frame; 
             CoraUtils.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Place.HeapID} \nIsNaval:{data.Place.IsNaval} \nLocation:{data.Place.Location.X},{data.Place.Location.Y} \nRTTIType:{data.Place.RTTIType}");
-            PlaceTechno(senderHouseIndex, data.Place.HeapID, data.Place.IsNaval == 0 ? false : true, data.Place.Location, data.Place.RTTIType);
+            DoPlace(senderHouseIndex, data.Place.HeapID, data.Place.IsNaval == 0 ? false : true, data.Place.Location, data.Place.RTTIType);
         }
 
-        protected bool PlaceTechno(int senderHouseIndex, int HeapID, bool IsNaval, CellStruct placeCoords, AbstractType RTTIType)
+        protected bool DoPlace(int senderHouseIndex, int HeapID, bool IsNaval, CellStruct placeCoords, AbstractType RTTIType)
         {
             var pTechnoType = TechnoTypeClass.GetByTypeAndIndex(RTTIType, HeapID);
             string sUnitName = pTechnoType.Convert<AbstractTypeClass>().Ref.UIName;
@@ -487,23 +487,30 @@ namespace Extension.CoraExtension
                 return false;
             }
             Pointer<TechnoClass> pTechno  = obj.Convert<TechnoClass>();
+            pTechno.Convert<AbstractClass>().CastIf(AbstractType.Building, out Pointer<BuildingClass> pBuilding);
+            if (MapClass.Instance.TryGetCellAt(placeCoords, out var pCell))
+			{
+                pTechno.Ref.Base.OnBridge = pCell.Ref.ContainsBridge();
+                var Guard = !pBuilding.IsNull || pHouse.Ref.ControlledByHuman();
+                var mission = Guard ? Mission.Guard : Mission.Hunt;
+                pTechno.Ref.BaseMission.QueueMission(mission, false);
 
-            if (pTechno.IsNull)
-            {
-                MainTools.PrintMessage($"转换{sUnitName}失败 pTechno is NULL");
-                return false;
-            }
 
-			
-            var isPut = pTechno.Ref.Base.Put(CellClass.Cell2Coord(placeCoords), (Direction) 7u);
-            if (isPut)
-            {
-                MainTools.PrintMessage($"创建{sUnitName}成功 在地图坐标  X:{placeCoords.X} Y:{placeCoords.Y}");
-                return true;
-            }
-            else
-            {
-                pTechno.Ref.Base.UnInit();
+
+                var XYZ = pCell.Ref.GetCoordsWithBridge();
+
+				var isPut = pTechno.Ref.Base.Put(XYZ, (Direction)(MapClass.GetCellIndex(pCell.Ref.MapCoords) & 7u));
+                 if (isPut)
+                {
+                    MainTools.PrintMessage($"创建{sUnitName}成功 在地图坐标  X:{placeCoords.X} Y:{placeCoords.Y}");
+                    return true;
+                }
+                else
+                {
+                    pTechno.Ref.Base.UnInit();
+                    return false;
+                }
+            }else{
                 return false;
             }
 

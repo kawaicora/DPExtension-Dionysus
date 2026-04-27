@@ -240,9 +240,9 @@ namespace Extension.CoraExtension
         {
             int i = 2;
             string text = string.Format("FPS: {0,-4} Avg: {1:F2} Frames: {2}", 
-                CoraUtils.CurrentFrameRate, 
-                CoraUtils.GetAverageFrameRate(),
-                CoraUtils.TotalFramesElapsed);
+                Game.CurrentFrameRate, 
+                Game.GetAverageFrameRate(),
+                Game.TotalFramesElapsed);
 
             const int AdvCommBarHeight = 32;
             int h = Surface.Composite.Ref.Height;
@@ -1072,9 +1072,9 @@ namespace Extension.CoraExtension
             for (int i = 0; i < count; i++)
             {
                 SendCoraPlaceEventEx(unitIDs[random.Next(unitIDs.Length)]);
-                yield return new WaitForFrames(CoraUtils.CurrentFrameRate );
+                yield return new WaitForFrames(Game.CurrentFrameRate );
                 SendCoraPlaceEventEx(unitIDs[random.Next(unitIDs.Length)]);
-                yield return new WaitForFrames(CoraUtils.CurrentFrameRate );
+                yield return new WaitForFrames(Game.CurrentFrameRate );
                 PlaceTechno(unitIDs2[random.Next(unitIDs2.Length)],HouseClass.Player);
             }
             bIsGenUnitTaskBusy=false;
@@ -1087,20 +1087,16 @@ namespace Extension.CoraExtension
         public static void SendCoraSpecialPlaceEvent(string id)
         {
             var cell = DisplayClass.Display_ZoneCell;
-            var pEvent = EventClass.EventClass_CTOR();
-            pEvent.Type = (NetworkEvents)CoraNetworkEvents.CoraSpecialPlace;
-            pEvent.HouseIndex = (byte)HouseClass.Player.Data.ArrayIndex;
-            pEvent.Data = new EventData
-            {
-                SpecialPlace = new SpecialPlace
+            NetworkHandle<SpecialPlace>.Send(
+                
+                (byte)CoraNetworkEvents.CoraSpecialPlace,
+                new SpecialPlace
                 {
                     ID = SuperWeaponTypeClass.GetIndexByID(id),
                     Location = cell,
                     ExtraData = 0
                 }
-            };
-            pEvent.Frame = CoraUtils.TotalFramesElapsed;
-            EventClass.AddEvent(pEvent);
+            );
             PrintMessage($"发送放置超武事件:{SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Find(id).Convert<AbstractTypeClass>().Ref.UIName} 地图坐标  X:{DisplayClass.Display_ZoneCell.X} Y:{DisplayClass.Display_ZoneCell.Y}");
         }
 

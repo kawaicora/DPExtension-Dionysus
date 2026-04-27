@@ -190,32 +190,7 @@ namespace Extension.CoraExtension {
                 return "执行失败: " + ex.Message;
             }
         }
-        private static readonly Pointer<uint> _currentFrameRate = new IntPtr(0xABCD44);
-        private static readonly Pointer<uint> _totalFramesElapsed = new IntPtr(0xABCD48);
-        private static readonly Pointer<uint> _totalTimeElapsed = new IntPtr(0xABCD4C);
-        private static readonly Pointer<bool> _reducedEffects = new IntPtr(0xABCD50);
-
-        // 实时 FPS（每次访问都会读取最新值，不是固定值）
-        public static uint CurrentFrameRate => _currentFrameRate.IsNotNull ? _currentFrameRate.Ref : 0;
         
-        // 总帧数
-        public static uint TotalFramesElapsed => _totalFramesElapsed.IsNotNull ? _totalFramesElapsed.Ref : 0;
-        
-        // 总耗时（单位：毫秒 / 秒 根据游戏决定）
-        public static uint TotalTimeElapsed => _totalTimeElapsed.IsNotNull ? _totalTimeElapsed.Ref : 0;
-        
-        // 低帧率模式
-        public static bool ReducedEffects => _reducedEffects.IsNotNull && _reducedEffects.Ref;
-            
-        public static double GetAverageFrameRate()
-        {
-            if(TotalTimeElapsed > 0) { //防止除0
-                return (double)TotalFramesElapsed
-                    / TotalTimeElapsed;
-            }
-
-            return 0.0;
-        }
 
         
         /// <summary>

@@ -1123,13 +1123,9 @@ namespace Extension.CoraExtension
                     case AbstractType.InfantryType:
                     case AbstractType.Building:
                     case AbstractType.BuildingType:
-           
-                        var pEvent1 = EventClass.EventClass_CTOR();
-                        pEvent1.Type = (NetworkEvents)CoraNetworkEvents.CoraPlace;
-                        pEvent1.HouseIndex = (byte)HouseClass.Player.Data.ArrayIndex;
-                        pEvent1.Data = new EventData
-                        {
-                            Place = new Place
+                        NetworkHandle<Place>.Send(
+                            (byte)CoraNetworkEvents.CoraPlace,
+                            new Place
                             {
                                 RTTIType = abstractType,
                                 HeapID = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, ID),
@@ -1137,9 +1133,8 @@ namespace Extension.CoraExtension
                                 Location = cell,
                                 ExtraData = 0
                             }
-                        };
-                        pEvent1.Frame = CoraUtils.TotalFramesElapsed;
-                        EventClass.AddEvent(pEvent1);
+                        );
+                       
                     break;
                     default:
                         CoraUtils.Log($"发送自定义放置事件失败: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType} 被忽略的类型:{abstractType}");
@@ -1161,17 +1156,17 @@ namespace Extension.CoraExtension
             int nIsNaval = pTechnoType.Ref.IsNaval ? 1 : 0;
             string sUnitName = pTechnoType.Convert<AbstractTypeClass>().Ref.UIName;
            
-            
+            NetworkHandle<Production>.Send(
+                (byte)NetworkEvents.Produce,
+                new Production
+                {
+                    RTTI_ID = (int)abstractType,
+                    Heap_ID = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, ID),
+                    IsNaval = nIsNaval,
 
-            
-            var pEvent1 = EventClass.EventClass_CTOR().EventClass_ProduceAbandonSuspend(
-                HouseClass.Player.Data.ArrayIndex,
-                NetworkEvents.Produce,
-                abstractType,
-                TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, ID),
-                pTechnoType.Ref.IsNaval 
+                    ExtraData = 0
+                }
             );
-            EventClass.AddEvent(pEvent1.Ref);
             CoraUtils.Log($"发送生产事件: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType}");
             
         }
@@ -1182,21 +1177,17 @@ namespace Extension.CoraExtension
             {
                 string nickname = "可乐";
                 string msg = "咕咕嘎嘎";
-                var pEvent = EventClass.EventClass_CTOR();
-                pEvent.Type = (NetworkEvents)CoraNetworkEvents.CoraDanmu;
-                pEvent.HouseIndex = (byte)HouseClass.Player.Data.ArrayIndex;
-                pEvent.Data = new EventData
-                {
-                    Danmu = new Danmu
+                NetworkHandle<Danmu>.Send(
+                (byte)CoraNetworkEvents.CoraDanmu,
+                    new Danmu
                     {
                         Type = DanmuType.Message,
                         Nickname = new UniString(nickname),
                         Message = new UniString(msg),
 
                     }
-                };
-                pEvent.Frame = CoraUtils.TotalFramesElapsed;
-                EventClass.AddEvent(pEvent);
+                );
+                
             }catch (Exception ex)
             {
                 Logger.PrintException(ex);

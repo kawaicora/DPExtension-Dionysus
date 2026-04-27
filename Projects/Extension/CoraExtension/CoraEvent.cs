@@ -20,8 +20,8 @@ namespace Extension.CoraExtension
             Network.NetworkHandles.Add(abandonEventRsp.Index, abandonEventRsp);
             AbandonAllEventRsp abandonAllEventRsp = new AbandonAllEventRsp();
             Network.NetworkHandles.Add(abandonAllEventRsp.Index, abandonAllEventRsp);
-            FrameEventRsp frameEventRsp = new FrameEventRsp();
-            Network.NetworkHandles.Add(frameEventRsp.Index,frameEventRsp);
+            FrameInfoEventRsp frameInfoEventRsp = new FrameInfoEventRsp();
+            Network.NetworkHandles.Add(frameInfoEventRsp.Index,frameInfoEventRsp);
             SpecialPlaceEventRsp specialPlaceEventRsp = new SpecialPlaceEventRsp();
             Network.NetworkHandles.Add(specialPlaceEventRsp.Index,specialPlaceEventRsp);
             MegamissionEventRsp megamissionEventRsp = new MegamissionEventRsp();
@@ -196,10 +196,10 @@ namespace Extension.CoraExtension
             
         }
     }
-    unsafe class FrameEventRsp : NetworkHandle<EventData>
+    unsafe class FrameInfoEventRsp : NetworkHandle<EventData>
     {
         // 定义事件索引（确保唯一）
-        public override byte Index => (byte)NetworkEvents.FrameSync;
+        public override byte Index => (byte)NetworkEvents.FrameInfo;
         
         // 定义数据长度
         
@@ -218,6 +218,31 @@ namespace Extension.CoraExtension
             var senderHouseIndex = pEvent.Ref.HouseIndex;
             var frame = pEvent.Ref.Frame; 
             CoraUtils.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n CommandCount: {data.FrameInfo.CommandCount} \nCRC:{data.FrameInfo.CRC} \nDelay:{data.FrameInfo.Delay}");
+            
+        }
+    }
+    unsafe class FrameSyncEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)NetworkEvents.FrameSync;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "帧同步事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+            CoraUtils.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex}");
             
         }
     }
@@ -409,6 +434,11 @@ namespace Extension.CoraExtension
         }
     }
 
+    
+    #endregion
+
+    #region 自定义事件
+
     //自定义事件，放置单位事件，包含单位类型、位置等信息
     unsafe class CoraPlaceEventRsp : NetworkHandle<EventData>
     {
@@ -470,7 +500,6 @@ namespace Extension.CoraExtension
 
         }
     }
-
 
     
     unsafe class CoraSpecialPlaceEventRsp : NetworkHandle<EventData>
@@ -592,10 +621,10 @@ namespace Extension.CoraExtension
         }
 
     }
-
     #endregion
+    
 
-    #region 事件类型
+    #region 自定义事件类型
 
     public enum CoraNetworkEvents : byte
     {

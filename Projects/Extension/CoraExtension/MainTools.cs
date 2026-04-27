@@ -1093,8 +1093,7 @@ namespace Extension.CoraExtension
                 new SpecialPlace
                 {
                     ID = SuperWeaponTypeClass.GetIndexByID(id),
-                    Location = cell,
-                    ExtraData = 0
+                    Location = cell
                 }
             );
             PrintMessage($"发送放置超武事件:{SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Find(id).Convert<AbstractTypeClass>().Ref.UIName} 地图坐标  X:{DisplayClass.Display_ZoneCell.X} Y:{DisplayClass.Display_ZoneCell.Y}");
@@ -1109,6 +1108,7 @@ namespace Extension.CoraExtension
                 AbstractType abstractType = pTechnoType.Convert<AbstractClass>().Ref.WhatAmI();
                 int nIsNaval = pTechnoType.Ref.IsNaval ? 1 : 0;
                 string sUnitName = pTechnoType.Convert<AbstractTypeClass>().Ref.UIName;
+
                 switch (abstractType)
                 {
                     case AbstractType.Unit:
@@ -1126,11 +1126,9 @@ namespace Extension.CoraExtension
                                 RTTIType = abstractType,
                                 HeapID = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, ID),
                                 IsNaval = nIsNaval,
-                                Location = cell,
-                                ExtraData = 0
+                                Location = cell
                             }
                         );
-                       
                     break;
                     default:
                         CoraUtils.Log($"发送自定义放置事件失败: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType} 被忽略的类型:{abstractType}");
@@ -1142,7 +1140,6 @@ namespace Extension.CoraExtension
             {
                 Logger.PrintException(ex);
             }
-            
         }
 
         
@@ -1158,9 +1155,7 @@ namespace Extension.CoraExtension
                 {
                     RTTI_ID = (int)abstractType,
                     Heap_ID = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, ID),
-                    IsNaval = nIsNaval,
-
-                    ExtraData = 0
+                    IsNaval = nIsNaval
                 }
             );
             CoraUtils.Log($"发送生产事件: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType}");

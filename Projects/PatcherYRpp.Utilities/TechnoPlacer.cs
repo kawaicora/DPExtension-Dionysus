@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -59,6 +60,34 @@ namespace PatcherYRpp.Utilities
 				int a5 = -1; // usually MapClass::CanLocationBeReached call. see how far we can get without it
 				placeCoords = MapClass.Instance.Pathfinding_Find(placeCoords,
 					speedType, a5, movementZone, false, extentX, extentY, !pBuilding.IsNull,
+					false, false, false, default, false, buildable);
+			}
+
+			return placeCoords;
+		}
+		public static CellStruct FindPlaceableCellNear(Pointer<TechnoTypeClass> pType, CellStruct location)
+		{
+			// get the best options to search for a place
+			short extentX = 1;
+			short extentY = 1;
+			SpeedType speedType = SpeedType.Track;
+			MovementZone movementZone = MovementZone.Normal;
+			bool buildable = false;
+			bool anywhere = false;
+			if (pType.Ref.Base.Base.Base.WhatAmI() != AbstractType.AircraftType)
+			{
+				speedType = pType.Ref.SpeedType;
+				movementZone = pType.Ref.MovementZone;
+			}
+			// move the target cell so this object is centered on the actual location
+			var placeCoords = location - new CellStruct(extentX / 2, extentY / 2);
+
+			// find a place to put this
+			if (!anywhere)
+			{
+				int a5 = -1; // usually MapClass::CanLocationBeReached call. see how far we can get without it
+				placeCoords = MapClass.Instance.Pathfinding_Find(placeCoords,
+					speedType, a5, movementZone, false, extentX, extentY, false,
 					false, false, false, default, false, buildable);
 			}
 

@@ -9,6 +9,15 @@ namespace Extension.CoraExtension
 
     class CoraEvent
     {
+        public static bool Send(byte id, EventData eventData)
+        {
+            var sender = EventClass.EventClass_CTOR();
+            sender.HouseIndex = (byte)HouseClass.Player.Ref.ArrayIndex;
+            sender.Type = (NetworkEvents)id;
+            sender.Frame = (uint)Game.CurrentFrame;
+            sender.Data = eventData;
+            return EventClass.AddEvent(sender);
+        }
         public static void RegisterEvent()
         {
              #region 网络事件注册

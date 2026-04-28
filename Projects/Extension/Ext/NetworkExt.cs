@@ -55,7 +55,7 @@ namespace Extension.Ext
 
             return 0;
         }
-     
+    
         public static unsafe uint Network_GetEventSize1_Behaviors(REGISTERS*  r)
         {
             var nSize = (byte)r->EDI;
@@ -69,7 +69,7 @@ namespace Extension.Ext
 
         }
 
-
+        
         public static unsafe uint Network_GetEventSize2_Behaviors(REGISTERS*  r)
         {
             var nSize = (byte)r->ESI;

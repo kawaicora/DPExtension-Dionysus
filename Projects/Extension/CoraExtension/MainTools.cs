@@ -70,7 +70,7 @@ namespace Extension.CoraExtension
             GScreenExt.DrawOnTop_TheDarkSideOfTheMoonCallback += DrawOnTop_TheDarkSideOfTheMoonCallback;
             #endregion
             
-            CoraEvent.RegisterEvent();
+           
            
 
 
@@ -370,7 +370,7 @@ namespace Extension.CoraExtension
                 bIsShowUnitName = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("ShowUnitName",false);
                 coroutines.Add(_coroutineSystem.StartCoroutine(GetAllHouseInfo()));
                 coroutines.Add(_coroutineSystem.StartCoroutine(MouseCountClear(0.5f)));
-
+                CoraEventUtils.RegisterEvent();
                 #region 注册弹幕事件
                 DouyinDanmuWebSocket.instance.OnLike += OnLike;
                 DouyinDanmuWebSocket.instance.OnChat += OnChat;
@@ -455,7 +455,7 @@ namespace Extension.CoraExtension
         
         public void Destroy()
         {
-
+            CoraEventUtils.UnregisterEvent();
             // 注销弹幕事件
             DouyinDanmuWebSocket.instance.OnLike -= OnLike;
             DouyinDanmuWebSocket.instance.OnChat -= OnChat;
@@ -1101,6 +1101,7 @@ namespace Extension.CoraExtension
 
         public static void SendCoraPlaceEventEx(string ID)
         {
+            
             try
             {
                 var cell = DisplayClass.Display_ZoneCell;
@@ -1108,7 +1109,6 @@ namespace Extension.CoraExtension
                 AbstractType abstractType = pTechnoType.Convert<AbstractClass>().Ref.WhatAmI();
                 int nIsNaval = pTechnoType.Ref.IsNaval ? 1 : 0;
                 string sUnitName = pTechnoType.Convert<AbstractTypeClass>().Ref.UIName;
-
                 switch (abstractType)
                 {
                     case AbstractType.Unit:
@@ -1119,6 +1119,7 @@ namespace Extension.CoraExtension
                     case AbstractType.InfantryType:
                     case AbstractType.Building:
                     case AbstractType.BuildingType:
+                        CellStruct lastCell = CellClass.Coord2Cell(TechnoPlacer.GetPlaceNearCoord(pTechnoType,cell));
                         NetworkHandle<Place>.Send(
                             (byte)CoraNetworkEvents.CoraPlace,
                             new Place
@@ -1126,7 +1127,7 @@ namespace Extension.CoraExtension
                                 RTTIType = abstractType,
                                 HeapID = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, ID),
                                 IsNaval = nIsNaval,
-                                Location = cell
+                                Location = lastCell
                             }
                         );
                     break;

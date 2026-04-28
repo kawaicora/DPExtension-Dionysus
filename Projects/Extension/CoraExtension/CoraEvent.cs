@@ -1,39 +1,33 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Runtime.ExceptionServices;
+using Extension.Coroutines;
 using Extension.Ext;
 using PatcherYRpp;
 using PatcherYRpp.Utilities;
 
 namespace Extension.CoraExtension
 {
-    
-
-    class CoraEvent
+    class CoraEventUtils
     {
-        public static bool Send(byte id, EventData eventData)
-        {
-            var sender = EventClass.EventClass_CTOR();
-            sender.HouseIndex = (byte)HouseClass.Player.Ref.ArrayIndex;
-            sender.Type = (NetworkEvents)id;
-            sender.Frame = (uint)Game.CurrentFrame;
-            sender.Data = eventData;
-            return EventClass.AddEvent(sender);
-        }
+       
         public static void RegisterEvent()
         {
             // #region 网络事件注册
-            PlaceEventRsp placeEventRsp = new PlaceEventRsp();
-            Network.NetworkHandles.Add(placeEventRsp.Index, placeEventRsp);
-            ProductEventRsp productEventRsp = new ProductEventRsp();
-            Network.NetworkHandles.Add(productEventRsp.Index, productEventRsp);
-            AbandonEventRsp abandonEventRsp = new AbandonEventRsp();
-            Network.NetworkHandles.Add(abandonEventRsp.Index, abandonEventRsp);
-            AbandonAllEventRsp abandonAllEventRsp = new AbandonAllEventRsp();
-            Network.NetworkHandles.Add(abandonAllEventRsp.Index, abandonAllEventRsp);
+            // PlaceEventRsp placeEventRsp = new PlaceEventRsp();
+            // Network.NetworkHandles.Add(placeEventRsp.Index, placeEventRsp);
+            // ProductEventRsp productEventRsp = new ProductEventRsp();
+            // Network.NetworkHandles.Add(productEventRsp.Index, productEventRsp);
+            // AbandonEventRsp abandonEventRsp = new AbandonEventRsp();
+            // Network.NetworkHandles.Add(abandonEventRsp.Index, abandonEventRsp);
+            // AbandonAllEventRsp abandonAllEventRsp = new AbandonAllEventRsp();
+            // Network.NetworkHandles.Add(abandonAllEventRsp.Index, abandonAllEventRsp);
             // FrameInfoEventRsp frameInfoEventRsp = new FrameInfoEventRsp();
             // Network.NetworkHandles.Add(frameInfoEventRsp.Index,frameInfoEventRsp);
-            SpecialPlaceEventRsp specialPlaceEventRsp = new SpecialPlaceEventRsp();
-            Network.NetworkHandles.Add(specialPlaceEventRsp.Index,specialPlaceEventRsp);
+            // SpecialPlaceEventRsp specialPlaceEventRsp = new SpecialPlaceEventRsp();
+            // Network.NetworkHandles.Add(specialPlaceEventRsp.Index,specialPlaceEventRsp);
             // MegamissionEventRsp megamissionEventRsp = new MegamissionEventRsp();
             // Network.NetworkHandles.Add(megamissionEventRsp.Index,megamissionEventRsp);
             // DeployEventRsp deployEventRsp = new DeployEventRsp();
@@ -54,9 +48,13 @@ namespace Extension.CoraExtension
             #endregion
 
         }
+          public static void UnregisterEvent()
+        {
+            Network.NetworkHandles.Clear();
+        }
+
     }
-
-
+  
     
     #region 事件类
     unsafe class PlaceEventRsp : NetworkHandle<EventData>
@@ -480,40 +478,31 @@ namespace Extension.CoraExtension
             var pTechnoType = TechnoTypeClass.GetByTypeAndIndex(RTTIType, HeapID);
             string sUnitName = pTechnoType.Convert<AbstractTypeClass>().Ref.UIName;
             Pointer<HouseClass> pHouse = HouseClass.Array[senderHouseIndex];
-            var obj = pTechnoType.Ref.Base.CreateObject(pHouse);
-            if (obj.IsNull)
-            {
-                MainTools.PrintMessage($"生成{sUnitName}失败 obj is NULL");
-                return false;
-            }
-            Pointer<TechnoClass> pTechno  = obj.Convert<TechnoClass>();
-            pTechno.Convert<AbstractClass>().CastIf(AbstractType.Building, out Pointer<BuildingClass> pBuilding);
-            if (MapClass.Instance.TryGetCellAt(placeCoords, out var pCell))
-			{
-                pTechno.Ref.Base.OnBridge = pCell.Ref.ContainsBridge();
-                var Guard = !pBuilding.IsNull || pHouse.Ref.ControlledByHuman();
-                var mission = Guard ? Mission.Guard : Mission.Hunt;
-                pTechno.Ref.BaseMission.QueueMission(mission, false);
+            // var obj = pTechnoType.Ref.Base.CreateObject(pHouse);
+            // if (obj.IsNull)
+            // {
+            //     MainTools.PrintMessage($"生成{sUnitName}失败 obj is NULL");
+            //     return false;
+            // }
+            // Pointer<TechnoClass> pTechno  = obj.Convert<TechnoClass>();
+            // pTechno.Convert<AbstractClass>().CastIf(AbstractType.Building, out Pointer<BuildingClass> pBuilding);
+            // var Guard = !pBuilding.IsNull || pHouse.Ref.ControlledByHuman();
+            // var mission = Guard ? Mission.Guard : Mission.Hunt;
+            // pTechno.Ref.BaseMission.QueueMission(mission, false);
 
-
-
-                var XYZ = pCell.Ref.GetCoordsWithBridge();
-
-				var isPut = pTechno.Ref.Base.Put(XYZ, (Direction)(MapClass.GetCellIndex(pCell.Ref.MapCoords) & 7u));
-                 if (isPut)
-                {
-                    MainTools.PrintMessage($"创建{sUnitName}成功 在地图坐标  X:{placeCoords.X} Y:{placeCoords.Y}");
-                    return true;
-                }
-                else
-                {
-                    pTechno.Ref.Base.UnInit();
-                    return false;
-                }
-            }else{
-                return false;
-            }
-
+            // var isPut = pTechno.Ref.Base.Put(CellClass.Cell2Coord(placeCoords), (Direction)7u);
+            // if (isPut)
+            // {
+            //     MainTools.PrintMessage($"创建{sUnitName}成功 在地图坐标  X:{placeCoords.X} Y:{placeCoords.Y}");
+            //     return true;
+            // }
+            // else
+            // {
+            //     pTechno.Ref.Base.UnInit();
+            //     return false;
+            // }
+            return TechnoPlacer.PlaceTechnoNear(pTechnoType,pHouse,placeCoords,true);
+            // return true;
         }
     }
 
@@ -644,9 +633,9 @@ namespace Extension.CoraExtension
 
     public enum CoraNetworkEvents : byte
     {
-        CoraPlace = 0x65,
-        CoraSpecialPlace = 0x66,
-        CoraDanmu = 0x70,
+        CoraPlace = 0x30,
+        CoraSpecialPlace = 0x31,
+        CoraDanmu = 0x32,
       
     }
 

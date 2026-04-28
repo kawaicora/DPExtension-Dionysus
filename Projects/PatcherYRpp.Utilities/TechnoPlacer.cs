@@ -99,6 +99,18 @@ namespace PatcherYRpp.Utilities
 			var pTechno = pType.Ref.Base.CreateObject(pOwner).Convert<TechnoClass>();
 			return PlaceTechnoNear(pTechno, location, buildUp);
 		}
+
+		public static CoordStruct GetPlaceNearCoord(Pointer<TechnoTypeClass> pType, CellStruct location)
+		{
+			CellStruct placeCoords = FindPlaceableCellNear(pType, location);
+			if (MapClass.Instance.TryGetCellAt(placeCoords, out var pCell))
+			{
+				// pTechno.Ref.Base.OnBridge = pCell.Ref.ContainsBridge();
+				var XYZ = pCell.Ref.GetCoordsWithBridge(); 
+				return XYZ;
+			}
+			return new CoordStruct();
+		}
 		public static bool PlaceTechnoNear(Pointer<TechnoClass> pTechno, CellStruct location, bool buildUp = false)
 		{
 			Pointer<TechnoTypeClass> pType = pTechno.Ref.Base.GetTechnoType();

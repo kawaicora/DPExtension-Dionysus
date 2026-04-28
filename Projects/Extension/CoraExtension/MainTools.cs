@@ -140,12 +140,21 @@ namespace Extension.CoraExtension
                     
                     // CoraUtils.Log($"玩家的工厂类被创建了！所属阵营：{factory.Ref.Owner.Ref.Type.Ref.Base.ID} ^w^");
                     PrintMessage($"玩家 {factory.Ref.Owner.Ref.Type.Ref.Base.UIName}   开始建造 {factory.Ref.Object.Ref.Type.Convert<AbstractTypeClass>().Ref.UIName } ^w^", (ColorSchemeIndex)factory.Ref.Owner.Ref.Type.Ref.ColorSchemeIndex,3*60);
-                    if (SessionClass.IsStandalone() || CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IsOnlineBattleDangerFunctionEnable",false))
+                    if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("InstantConstruction",false))
                     {
-                        if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("InstantConstruction",false))
-                        {
-                            factory.Ref.Production.Step  = 54; //联机不可用
-                        }
+                        AbstractType abstractType = factory.Ref.Object.Ref.BaseAbstract.WhatAmI();
+                        string id = factory.Ref.Object.Ref.Type.Convert<AbstractTypeClass>().Ref.ID;
+                        bool isNaval = factory.Ref.Object.Ref.Type.Ref.IsNaval;
+                        int index = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType,id) ;
+                        NetworkHandle<Production>.Send(
+                            (byte)CoraNetworkEvents.CoraProduceComple,
+                            new Production
+                            {  
+                                RTTI_ID= (int)abstractType,
+                                Heap_ID = index,
+                                IsNaval = isNaval?1:0
+                            }
+                        );
                     }
                 }
                 else
@@ -1023,12 +1032,7 @@ namespace Extension.CoraExtension
         }
 
         #region  热键方法直接执行
-        public static void GivePlayerMoney(int count)
-        {
-        
-            PrintMessage($"给玩家资金{count}");
-            HouseClass.Player.Ref.TransactMoney(count);
-        } 
+
         private static bool bIsShowUnitName = false;
         public static void SwitchDisplayUnitNames()
         {
@@ -1048,42 +1052,42 @@ namespace Extension.CoraExtension
            
         }
     
-        public static void PlayVox()
-        {
-            VocClass.Speak("EVA_UnitReady");
-        }
-        static bool bIsGenUnitTaskBusy = false;
+        
         public static void GenUnitRandom(bool GiveToEnemy = false)
         {
-            if (!bIsGenUnitTaskBusy)
-            {
-                 int count = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("GenUnitCount",5);
-                
-                string[] unitIDs = CoraUtils.MainToolsConfig("PlayerBaseConfig").GetList<string>("RandomInfantryUnitID");
-                string[] unitIDs2 = CoraUtils.MainToolsConfig("PlayerBaseConfig").GetList<string>("RandomInfantryUnitID2");
-                _coroutineSystem.StartCoroutine(PlaceSomeTechno(unitIDs,unitIDs2,count));
-            }
            
-        }
-        private static IEnumerator PlaceSomeTechno(string [] unitIDs, string [] unitIDs2 ,int count)
-        {
-            bIsGenUnitTaskBusy = true;
+            int count = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("GenUnitCount",5);
+            
+            string[] unitIDs = CoraUtils.MainToolsConfig("PlayerBaseConfig").GetList<string>("RandomInfantryUnitID");
+            string[] unitIDs2 = CoraUtils.MainToolsConfig("PlayerBaseConfig").GetList<string>("RandomInfantryUnitID2");
+            
             Random random = new Random();
             for (int i = 0; i < count; i++)
             {
-                SendCoraPlaceEventEx(unitIDs[random.Next(unitIDs.Length)]);
-                yield return new WaitForFrames(Game.CurrentFrameRate );
-                SendCoraPlaceEventEx(unitIDs[random.Next(unitIDs.Length)]);
-                yield return new WaitForFrames(Game.CurrentFrameRate );
+                SendCoraPlaceEvent(unitIDs[random.Next(unitIDs.Length)]);
+                SendCoraPlaceEvent(unitIDs[random.Next(unitIDs.Length)]);
                 PlaceTechno(unitIDs2[random.Next(unitIDs2.Length)],HouseClass.Player);
             }
-            bIsGenUnitTaskBusy=false;
-        }
         
+           
+        }
+      
         #endregion
 
-
         #region 热键方法使用事件
+
+
+        public static void SendChangeMoneyEvent(int money)
+        {
+            NetworkHandle<UnknownTuple>.Send(
+                (byte)CoraNetworkEvents.CoraMoneyChange,
+                new UnknownTuple
+                {
+                    Unknown_0 = money      
+                }
+            );
+            PrintMessage($"发送资金修改事件: {money}");
+        }
         public static void SendCoraSpecialPlaceEvent(string id)
         {
             var cell = DisplayClass.Display_ZoneCell;
@@ -1099,7 +1103,7 @@ namespace Extension.CoraExtension
             PrintMessage($"发送放置超武事件:{SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Find(id).Convert<AbstractTypeClass>().Ref.UIName} 地图坐标  X:{DisplayClass.Display_ZoneCell.X} Y:{DisplayClass.Display_ZoneCell.Y}");
         }
 
-        public static void SendCoraPlaceEventEx(string ID)
+        public static void SendCoraPlaceEvent(string ID)
         {
             
             try
@@ -1109,32 +1113,18 @@ namespace Extension.CoraExtension
                 AbstractType abstractType = pTechnoType.Convert<AbstractClass>().Ref.WhatAmI();
                 int nIsNaval = pTechnoType.Ref.IsNaval ? 1 : 0;
                 string sUnitName = pTechnoType.Convert<AbstractTypeClass>().Ref.UIName;
-                switch (abstractType)
-                {
-                    case AbstractType.Unit:
-                    case AbstractType.UnitType:
-                    case AbstractType.Aircraft:
-                    case AbstractType.AircraftType:
-                    case AbstractType.Infantry:
-                    case AbstractType.InfantryType:
-                    case AbstractType.Building:
-                    case AbstractType.BuildingType:
-                        CellStruct lastCell = CellClass.Coord2Cell(TechnoPlacer.GetPlaceNearCoord(pTechnoType,cell));
-                        NetworkHandle<Place>.Send(
-                            (byte)CoraNetworkEvents.CoraPlace,
-                            new Place
-                            {
-                                RTTIType = abstractType,
-                                HeapID = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, ID),
-                                IsNaval = nIsNaval,
-                                Location = lastCell
-                            }
-                        );
-                    break;
-                    default:
-                        CoraUtils.Log($"发送自定义放置事件失败: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType} 被忽略的类型:{abstractType}");
-                        break;
-                }
+                CellStruct lastCell = CellClass.Coord2Cell(TechnoPlacer.GetPlaceNearCoord(pTechnoType,cell));
+                NetworkHandle<Place>.Send(
+                    (byte)CoraNetworkEvents.CoraPlace,
+                    new Place
+                    {
+                        RTTIType = abstractType,
+                        HeapID = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, ID),
+                        IsNaval = nIsNaval,
+                        Location = cell
+                    }
+                );
+                
 
                 CoraUtils.Log($"发送自定义放置事件: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType}");
             }catch (Exception ex)

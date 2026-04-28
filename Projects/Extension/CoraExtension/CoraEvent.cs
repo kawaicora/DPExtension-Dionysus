@@ -39,12 +39,10 @@ namespace Extension.CoraExtension
             // Network.NetworkHandles.Add(processTimeEventRsp.Index,processTimeEventRsp);
             // #endregion
             #region 自定义事件
-            CoraPlaceEventRsp coraPlaceEventRsp = new CoraPlaceEventRsp();
-            Network.NetworkHandles.Add(coraPlaceEventRsp.Index,coraPlaceEventRsp);
-            CoraDanmuEventRsp coraDanmuEventRsp = new CoraDanmuEventRsp();
-            Network.NetworkHandles.Add(coraDanmuEventRsp.Index,coraDanmuEventRsp);
-            CoraSpecialPlaceEventRsp coraSpecialPlaceEventRsp = new CoraSpecialPlaceEventRsp();
-            Network.NetworkHandles.Add(coraSpecialPlaceEventRsp.Index,coraSpecialPlaceEventRsp);
+            Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraPlace,new CoraPlaceEventRsp());
+            Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraSpecialPlace,new CoraSpecialPlaceEventRsp());
+            Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraProduceComple,new CoraProduceCompleEventRsp());
+             Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraMoneyChange,new CoraMoneyChangeEventRsp());
             #endregion
 
         }
@@ -573,6 +571,130 @@ namespace Extension.CoraExtension
             }
         }
     }
+
+
+    unsafe class CoraProduceCompleEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)CoraNetworkEvents.CoraProduceComple;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "自定义生产完成事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            // pFactory.Ref.CompletedProduction();
+            // 可以通过 pEvent 获取发送方信息
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+            DoProduceComple(pEvent.Ref.HouseIndex,(AbstractType)data.Production.RTTI_ID,data.Production.Heap_ID,(data.Production.IsNaval == 1 )?true:false);
+            
+            
+   
+        }
+        protected bool DoProduceComple(int senderHouseIndex, AbstractType abs, int heapId,bool isNaval)
+        {
+            Pointer<TechnoTypeClass> pTechnoType = TechnoTypeClass.GetByTypeAndIndex(abs,heapId);
+            Pointer<BuildingTypeClass> pBuilding =  pTechnoType.Convert<BuildingTypeClass>();
+            Pointer<HouseClass> pHouse = HouseClass.Array[senderHouseIndex];
+            Pointer<FactoryClass> pFactory = Pointer<FactoryClass>.Zero ;
+            switch (abs)
+            {
+                case AbstractType.Unit:
+                case AbstractType.UnitType:
+                    if (isNaval)
+                    {
+                        pFactory = pHouse.Ref.PrimaryForShips;
+                    }
+                    else
+                    {
+                        pFactory = pHouse.Ref.PrimaryForVehicles;   
+                    }
+                break;
+                case AbstractType.Aircraft:
+                case AbstractType.AircraftType:
+                    pFactory = pHouse.Ref.PrimaryForAircraft;   
+                break;
+                case AbstractType.Building:
+                case AbstractType.BuildingType:
+
+                    if(pBuilding.Ref.BuildCat == BuildCat.Combat)
+                    {
+                        pFactory = pHouse.Ref.PrimaryForDefenses;
+                    }
+                    else
+                    {
+                        pFactory = pHouse.Ref.PrimaryForBuildings;
+                    }
+                break;
+                case AbstractType.Infantry:
+                case AbstractType.InfantryType:
+                    pFactory = pHouse.Ref.PrimaryForInfantry;
+                break;
+                
+                    
+                    
+            }
+
+            if (pFactory.IsNull)
+            {
+                return false;   
+            }
+            pFactory.Ref.Production.Step = 54;
+
+            return true;
+
+        }
+    }
+
+    unsafe class CoraMoneyChangeEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)CoraNetworkEvents.CoraMoneyChange;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "自定义生产完成事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            // pFactory.Ref.CompletedProduction();
+            // 可以通过 pEvent 获取发送方信息
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+
+            int money = data.Unknown_Tuple.Unknown_0;
+
+            DoMoneyChange(pEvent.Ref.HouseIndex,money);
+            
+            
+   
+        }
+        protected bool DoMoneyChange(int senderHouseIndex, int money)
+        {
+            
+            Pointer<HouseClass> pHouse = HouseClass.Array[senderHouseIndex];
+            pHouse.Ref.TransactMoney(money);
+            return true;
+
+        }
+    }
+    
     unsafe class CoraDanmuEventRsp : NetworkHandle<EventData>
     {
         // 定义事件索引（确保唯一）
@@ -635,7 +757,9 @@ namespace Extension.CoraExtension
     {
         CoraPlace = 0x30,
         CoraSpecialPlace = 0x31,
-        CoraDanmu = 0x32,
+        CoraProduceComple = 0x32,
+        CoraMoneyChange = 0x33,
+        CoraDanmu = 0x40,
       
     }
 

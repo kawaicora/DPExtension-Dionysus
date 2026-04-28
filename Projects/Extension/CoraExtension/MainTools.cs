@@ -83,23 +83,23 @@ namespace Extension.CoraExtension
             {
                 if (house.IsNull)
                 {
-                    CoraUtils.Log("HouseExt CreateCallback 已经执行, 但是 house 是 null QAQ");
+                    Logger.Log("HouseExt CreateCallback 已经执行, 但是 house 是 null QAQ");
                     return;
                 }
                 if (house.Ref.Type.IsNull)
                 {
-                    CoraUtils.Log("HouseExt CreateCallback 已经执行, 但是 house的Type 是 null QAQ");
+                    Logger.Log("HouseExt CreateCallback 已经执行, 但是 house的Type 是 null QAQ");
                     return;
                 }
                 if (house == HouseClass.Player)
                 {
-                    CoraUtils.Log($"玩家 {house.Ref.Type.Ref.Base.UIName}:{house.Ref.Type.Ref.Base.ID}的HouseClass实例被创建了！");
+                    Logger.Log($"玩家 {house.Ref.Type.Ref.Base.UIName}:{house.Ref.Type.Ref.Base.ID}的HouseClass实例被创建了！");
                 }
                 else
                 {
                     string targetTag = house.Ref.ControlledByHuman() ? "远程玩家" : "AI";
                     string enemyTag = house.Ref.IsAlliedWith(HouseClass.Player)? "盟友":"敌人";
-                    CoraUtils.Log($"{enemyTag} {targetTag} {house.Ref.Type.Ref.Base.UIName}:{house.Ref.Type.Ref.Base.ID}的HouseClass实例被创建了！");
+                    Logger.Log($"{enemyTag} {targetTag} {house.Ref.Type.Ref.Base.UIName}:{house.Ref.Type.Ref.Base.ID}的HouseClass实例被创建了！");
                 }
             };
 
@@ -108,14 +108,19 @@ namespace Extension.CoraExtension
             {
                 if (factory.IsNull)
                 {
-                    CoraUtils.Log("建造工厂类ProgressAddCallback 已经执行, 但是 factory 是 null QAQ");
+                    Logger.Log("建造工厂类ProgressAddCallback 已经执行, 但是 factory 是 null QAQ");
                     return;
                 }
                 if (factory.Ref.Owner.IsNull)
                 {
-                    CoraUtils.Log("建造工厂类ProgressAddCallback 已经执行, 但是工厂的所有者是null QAQ");
+                    Logger.Log("建造工厂类ProgressAddCallback 已经执行, 但是工厂的所有者是null QAQ");
                     
                     return;
+                }
+
+                if (factory.Ref.Owner  == HouseClass.Player)
+                {
+                    
                 }
                 
             };
@@ -125,45 +130,45 @@ namespace Extension.CoraExtension
             {
                 if (factory.IsNull)
                 {
-                    CoraUtils.Log("建造工厂类CreateCallback 已经执行, 但是 factory 是 null QAQ");
+                    Logger.Log("建造工厂类CreateCallback 已经执行, 但是 factory 是 null QAQ");
                     return;
                 }
                 if (factory.Ref.Owner.IsNull)
                 {
-                    CoraUtils.Log("建造工厂类CreateCallback 已经执行, 但是工厂的所有者是null QAQ");
+                    Logger.Log("建造工厂类CreateCallback 已经执行, 但是工厂的所有者是null QAQ");
                     return;
                 }
                 
 
                 if (factory.Ref.Owner == HouseClass.Player)
                 {
-                    
-                    // CoraUtils.Log($"玩家的工厂类被创建了！所属阵营：{factory.Ref.Owner.Ref.Type.Ref.Base.ID} ^w^");
-                    PrintMessage($"玩家 {factory.Ref.Owner.Ref.Type.Ref.Base.UIName}   开始建造 {factory.Ref.Object.Ref.Type.Convert<AbstractTypeClass>().Ref.UIName } ^w^", (ColorSchemeIndex)factory.Ref.Owner.Ref.Type.Ref.ColorSchemeIndex,3*60);
-                    if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("InstantConstruction",false))
+                    if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("InstantConstruction", false))
                     {
                         AbstractType abstractType = factory.Ref.Object.Ref.BaseAbstract.WhatAmI();
                         string id = factory.Ref.Object.Ref.Type.Convert<AbstractTypeClass>().Ref.ID;
                         bool isNaval = factory.Ref.Object.Ref.Type.Ref.IsNaval;
-                        int index = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType,id) ;
+                        int index = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, id);
                         NetworkHandle<Production>.Send(
                             (byte)CoraNetworkEvents.CoraProduceComple,
                             new Production
-                            {  
-                                RTTI_ID= (int)abstractType,
+                            {
+                                RTTI_ID = (int)abstractType,
                                 Heap_ID = index,
-                                IsNaval = isNaval?1:0
+                                IsNaval = isNaval ? 1 : 0
                             }
                         );
                     }
+                    // Logger.Log($"玩家的工厂类被创建了！所属阵营：{factory.Ref.Owner.Ref.Type.Ref.Base.ID} ^w^");
+                    MessageListClass.Instance.PrintMessage($"玩家 {factory.Ref.Owner.Ref.Type.Ref.Base.UIName}   开始建造 {factory.Ref.Object.Ref.Type.Convert<AbstractTypeClass>().Ref.UIName } ^w^", (ColorSchemeIndex)factory.Ref.Owner.Ref.Type.Ref.ColorSchemeIndex,3*60);
+                    
                 }
                 else
                 {
                     
                     string targetTag = factory.Ref.Owner.Ref.ControlledByHuman() ? "远程玩家" : "AI";
                     string enemyTag = factory.Ref.Owner.Ref.IsAlliedWith(HouseClass.Player)? "盟友":"敌人";
-                    // CoraUtils.Log($"{enemyTag} {targetTag} 的工厂类被创建了！所属阵营：{factory.Ref.Owner.Ref.Type.Ref.Base.ID} ^w^");
-                    PrintMessage($"{enemyTag} {targetTag } {factory.Ref.Owner.Ref.Type.Ref.Base.UIName}  开始建造 {factory.Ref.Object.Ref.Type.Convert<AbstractTypeClass>().Ref.UIName}  ^w^", (ColorSchemeIndex)factory.Ref.Owner.Ref.Type.Ref.ColorSchemeIndex,3*60);
+                    // Logger.Log($"{enemyTag} {targetTag} 的工厂类被创建了！所属阵营：{factory.Ref.Owner.Ref.Type.Ref.Base.ID} ^w^");
+                    MessageListClass.Instance.PrintMessage($"{enemyTag} {targetTag } {factory.Ref.Owner.Ref.Type.Ref.Base.UIName}  开始建造 {factory.Ref.Object.Ref.Type.Convert<AbstractTypeClass>().Ref.UIName}  ^w^", (ColorSchemeIndex)factory.Ref.Owner.Ref.Type.Ref.ColorSchemeIndex,3*60);
                     
                 }
 
@@ -189,17 +194,17 @@ namespace Extension.CoraExtension
             };
             #endregion
             
-            CoraUtils.Log("MainTools CTOR");
+            Logger.Log("MainTools CTOR");
         }
 
         private void Start()
         {
             try
             {
-                CoraUtils.Log($"MainTools Started");
+                Logger.Log($"MainTools Started");
             }catch (Exception ex)
             {
-                CoraUtils.PrintException(ex);
+                Logger.PrintException(ex);
             }
         }
 
@@ -293,78 +298,6 @@ namespace Extension.CoraExtension
             Surface.Composite.Ref.DrawText($"敌方阵营数量:{pAllEnemyHouses.Count}" , location, SystemUtils.ToRgb565(255,0,0),0,-1);
 
         }
-
-        private static Pointer<TechnoClass> PlaceTechno(string sUnitID,Pointer<HouseClass> onwer)
-        {
-            string sUnitName = TechnoTypeClass.ABSTRACTTYPE_ARRAY.Find(sUnitID).Convert<AbstractTypeClass>().Ref.UIName;
-            var obj = TechnoTypeClass.ABSTRACTTYPE_ARRAY.Find(sUnitID).Ref.Base.CreateObject(onwer);
-            if (obj.IsNull)
-            {
-                PrintMessage($"生成{sUnitName}失败 obj is NULL");
-                return Pointer<TechnoClass>.Zero;
-            }
-            Pointer<TechnoClass> pTechno  = obj.Convert<TechnoClass>();
-
-            if (pTechno.IsNull)
-            {
-                PrintMessage($"转换{sUnitName}失败 pTechno is NULL");
-                return Pointer<TechnoClass>.Zero;
-            }
-            TechnoExt ext = TechnoExt.ExtMap.Find(pTechno);
-
-
-
-            var isCreated = TechnoPlacer.PlaceTechnoNear( pTechno,DisplayClass.Display_ZoneCell);
-            if (isCreated)
-            {
-                PrintMessage($"创建{sUnitName}成功 在地图坐标  X:{DisplayClass.Display_ZoneCell.X} Y:{DisplayClass.Display_ZoneCell.Y}");
-            }
-            return pTechno;
-        }
-
-        /// <summary>
-        /// 生成中心附近的随机坐标列表（无重复）
-        /// </summary>
-        /// <param name="center">中心单元格</param>
-        /// <param name="range">范围</param>
-        /// <param name="count">生成数量</param>
-        /// <returns>无重复坐标列表</returns>
-        private List<CellStruct> gen_range_cells(CellStruct center, int range, int count)
-        {
-            List<CellStruct> cells = new List<CellStruct>();
-            Random _random = new Random();
-
-            while (cells.Count < count)
-            {
-                // 生成随机偏移
-                int offsetX = _random.Next(-range, range + 1);
-                int offsetY = _random.Next(-range, range + 1);
-
-                CellStruct newCell = center;
-                newCell.X += (short)offsetX;
-                newCell.Y += (short)offsetY;
-
-                // ✅ 严格检查：如果列表里已经有这个坐标，就跳过，不添加
-                bool isDuplicate = false;
-                foreach (var exist in cells)
-                {
-                    if (exist.X == newCell.X && exist.Y == newCell.Y)
-                    {
-                        isDuplicate = true;
-                        break;
-                    }
-                }
-
-                // 不重复才添加
-                if (!isDuplicate)
-                {
-                    cells.Add(newCell);
-                }
-            }
-
-            return cells;
-        }
-
         static int m_MouseDownCount = 0;
 
         #region GameBattleFirstResume
@@ -377,8 +310,6 @@ namespace Extension.CoraExtension
                 bIsAIControlEnable = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("AIControl",false);
                 
                 bIsShowUnitName = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("ShowUnitName",false);
-                coroutines.Add(_coroutineSystem.StartCoroutine(GetAllHouseInfo()));
-                coroutines.Add(_coroutineSystem.StartCoroutine(MouseCountClear(0.5f)));
                 CoraEventUtils.RegisterEvent();
                 #region 注册弹幕事件
                 DouyinDanmuWebSocket.instance.OnLike += OnLike;
@@ -386,14 +317,38 @@ namespace Extension.CoraExtension
                 DouyinDanmuWebSocket.instance.OnGift += OnGift;
                 DouyinDanmuWebSocket.instance.JoinRoom += JoinRoom;
                 #endregion
-                coroutines.Add(_coroutineSystem.StartCoroutine(TEnumerator()));
                 if (SessionClass.IsStandalone() || CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IsOnlineBattleDangerFunctionEnable",false))
                 {
                     HouseClass.Player.Ref.IQLevel = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IQLevel",(uint)0);  
                     HouseClass.Player.Ref.IQLevel2 = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IQLevel2",(uint)0);
                     if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("SuperweaponNoWait",false))
                     {
-                        coroutines.Add(_coroutineSystem.StartCoroutine(CurrentPlayerAllSuperWeaponCharge())) ;  // 联机不可用
+                        for (var index = 0 ; index < HouseClass.Player.Ref.Supers.Count;index++)
+                        {
+                            try
+                            {
+                                if (HouseClass.Player.Ref.Supers[index].IsNull)
+                                {
+                                    continue;
+                                }
+                                NetworkHandle<UnknownTuple>.Send(
+                                    (byte)CoraNetworkEvents.CoraSpecialCharge,
+                                    new UnknownTuple
+                                    {
+                                        Unknown_0 = index,
+
+                                    }
+                                );
+                            }catch(Exception ex)
+                            {
+                                Logger.PrintException(ex);
+                            }
+                            
+                        }
+                        foreach (var item in HouseClass.Player.Ref.Supers)
+                        {
+                            
+                        }
                     }
                     if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("InitialMoney",0) > 0)
                     {
@@ -405,15 +360,15 @@ namespace Extension.CoraExtension
                 }
                 
                 if(!SessionClass.IsStandalone()){
-                    PrintMessage("联机模式!!",ColorSchemeIndex.Green,3*60);
+                    MessageListClass.Instance.PrintMessage("联机模式!!",ColorSchemeIndex.Green,3*60);
                     int iPlayerCount = CoraUtils.GetPlayerCount();
-                    PrintMessage($"联机玩家数量: {iPlayerCount}");
-                    CoraUtils.Log($"联机玩家数量: {iPlayerCount}");
+                    MessageListClass.Instance.PrintMessage($"联机玩家数量: {iPlayerCount}");
+                    Logger.Log($"联机玩家数量: {iPlayerCount}");
               
                     CoraUtils.GetPlayerNameList((sPlayerName) =>
                     {
-                        PrintMessage($"玩家名字:{sPlayerName}");
-                        CoraUtils.Log($"玩家名字:{sPlayerName}");
+                        MessageListClass.Instance.PrintMessage($"玩家名字:{sPlayerName}");
+                        Logger.Log($"玩家名字:{sPlayerName}");
                     }
                     );
                 }
@@ -422,13 +377,13 @@ namespace Extension.CoraExtension
                     switch(SessionClass.Instance.GameMode)
                     {
                         case GameMode.Campaign:
-                            PrintMessage("战役模式!!",ColorSchemeIndex.Green,3*60);
+                            MessageListClass.Instance.PrintMessage("战役模式!!",ColorSchemeIndex.Green,3*60);
                             break;
                         case GameMode.Skirmish:
-                            PrintMessage("单人对战模式!!",ColorSchemeIndex.Green,3*60);
+                            MessageListClass.Instance.PrintMessage("单人对战模式!!",ColorSchemeIndex.Green,3*60);
                             break;
                         default:
-                            PrintMessage($"未知游戏模式 {SessionClass.Instance.GameMode}!!",ColorSchemeIndex.Green,3*60);
+                            MessageListClass.Instance.PrintMessage($"未知游戏模式 {SessionClass.Instance.GameMode}!!",ColorSchemeIndex.Green,3*60);
                             break;
                     }
                 }
@@ -438,13 +393,13 @@ namespace Extension.CoraExtension
                 var hotkeyConfig = CoraUtils.MainToolsConfig("HotkeyConfig");
                 CoraUtils.ParseHotkeyConfig(hotkeyConfig.GetBuffer().Unparsed);
 
-                CoraUtils.Log($"MainTools GameBattleFirstResume");
+                Logger.Log($"MainTools GameBattleFirstResume");
                 
                 
             }
             catch(Exception ex)
             {
-                CoraUtils.PrintException(ex);
+                Logger.PrintException(ex);
             }
             
             //在组件被创建时执行一次
@@ -476,7 +431,7 @@ namespace Extension.CoraExtension
                 _coroutineSystem.StopCoroutine(item);
             }
 
-            CoraUtils.Log($"MainTools Destroyed");
+            Logger.Log($"MainTools Destroyed");
 
             //在组件被销毁时执行一次
         }
@@ -490,7 +445,7 @@ namespace Extension.CoraExtension
                 house.Ref.IQLevel = 5;  
                 house.Ref.IQLevel2 = 5;  
                 house.Ref.AutocreateAllowed = 1; // 允许自动生产
-                PrintMessage("AIControl");
+                MessageListClass.Instance.PrintMessage("AIControl");
             }
             else
             {
@@ -498,59 +453,12 @@ namespace Extension.CoraExtension
                 HouseClass.Player.Ref.IQLevel = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IQLevel",(uint)0);  
                 HouseClass.Player.Ref.IQLevel2 = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IQLevel2",(uint)0);
                 house.Ref.AutocreateAllowed = 0; // 禁止自动生产
-                PrintMessage("PlayerControl");
+                MessageListClass.Instance.PrintMessage("PlayerControl");
             }
             
         }
-        private IEnumerator MouseCountClear(float t)
-        {
-            while (true)
-            {
 
-                yield return CoroutineUtils.WaitForSeconds(t);
-
-                if (m_MouseDownCount != 0)
-                {
-                    m_MouseDownCount = 0;
-                }
-            }
-        }
-
-        
-        
- 
-        public IEnumerator TEnumerator()
-        {
-            while (true)
-            {
-                // foreach (var item in SidebarClass.Instance.Tabs)
-                // {
-                //     Logger.Log($"CemoCount: {item.CameoCount}");
-                //     foreach (var cemo in item.Cameos)
-                //     {
-                //         Logger.Log($"CemoIndex: {cemo.ItemIndex}");
-                //         Logger.Log($"CemoIndex: {cemo.ItemType}");
-                        
-                        
-                //     }
-                    
-                // }
-                // foreach (var item in SidebarClass.Instance.DiplomacyHouses)
-                // {
-                //     Logger.Log($"{item.Ref.Type.Ref.Base.UIName}");
-                // }
-                yield return new WaitForFrames(60);
-            }
-        }
-
-
-        
-        public static void PrintMessage(string msg,ColorSchemeIndex color = ColorSchemeIndex.White, int duration = 60, bool silent = false)
-        {
-            MessageListClass.Instance.MaxMessages = 100;
-            MessageListClass.Instance.PrintMessage(msg, color, duration, silent);
-        }
-
+   
         
 
         /// <summary>
@@ -596,7 +504,7 @@ namespace Extension.CoraExtension
             catch (Exception ex)
             {
                 _ = ex;
-                CoraUtils.PrintException(ex);
+                Logger.PrintException(ex);
             }
         }
 
@@ -620,17 +528,17 @@ namespace Extension.CoraExtension
 
                 if (pSWType.IsNull)
                 {
-                    CoraUtils.Log($"发射失败：未找到超级武器类型 {superWeaponName}");
+                    Logger.Log($"发射失败：未找到超级武器类型 {superWeaponName}");
                     return;
                 }
                 Pointer<SuperClass> pSuper = houseClass.Ref.FindSuperWeapon(pSWType);
                 if (pSuper.IsNull)
                 {
-                    CoraUtils.Log($"发射失败：HouseClass未拥有超级武器 {superWeaponName}");
+                    Logger.Log($"发射失败：HouseClass未拥有超级武器 {superWeaponName}");
                     return;
                 }
                 
-                CoraUtils.Log("FireSuperWeapon({2}):0x({3:X}) -> ({0}, {1})", pTarget.X, pTarget.Y, pSWType.Ref.Base.ID, (int)pSuper);
+                Logger.Log("FireSuperWeapon({2}):0x({3:X}) -> ({0}, {1})", pTarget.X, pTarget.Y, pSWType.Ref.Base.ID, (int)pSuper);
                 pSuper.Ref.SetCharge(100);
                 pSuper.Ref.IsCharged = true;
                 pSuper.Ref.Launch(pTarget, houseClass.Ref.PlayerControl);
@@ -639,7 +547,7 @@ namespace Extension.CoraExtension
             catch (Exception ex)
             {
                 _ = ex;
-                CoraUtils.PrintException(ex);
+                Logger.PrintException(ex);
             }
         }
         
@@ -656,7 +564,7 @@ namespace Extension.CoraExtension
             List<Pointer<HouseClass>> enemyHousePtrList = HouseClass.GetTargetAllEnemyHouse(HouseClass.Player,  bFilterNeutral: true ,bFilterSpecial: true);
             if (enemyHousePtrList.Count == 0)
             {
-                CoraUtils.Log("当前无敌方阵营，无法攻击敌人");
+                Logger.Log("当前无敌方阵营，无法攻击敌人");
                 return;
             }
             
@@ -664,7 +572,7 @@ namespace Extension.CoraExtension
             var targetHouse = enemyHousePtrList[randomAiHouseNumber];
             if (targetHouse.Ref.Buildings.Count == 0)
             {
-                CoraUtils.Log($"目标阵营 {targetHouse.Ref.Type.Ref.Base.UIName} 没有建筑，无法攻击");
+                Logger.Log($"目标阵营 {targetHouse.Ref.Type.Ref.Base.UIName} 没有建筑，无法攻击");
                 return;
             }
             int buildingsCount = targetHouse.Ref.Buildings.Count();
@@ -677,188 +585,13 @@ namespace Extension.CoraExtension
 
     
 
-        [HandleProcessCorruptedStateExceptions]
-        private static IEnumerator CurrentPlayerAllSuperWeaponCharge()
-        {
-            while (true)
-            {
-                try
-                {
-                
-                    foreach (Pointer<SuperClass> super in HouseClass.Player.Ref.Supers)
-                    {
-                        try
-                        {
-                  
-                            super.Ref.SetCharge(100);
-                            super.Ref.IsCharged = true;
-                            SuperWeaponType superWeaponType = super.Ref.Type.Ref.Type;
-
-                            if (super.Ref.CanFire() && super.Ref.IsCharged)
-                            {
-                                string superWeaponName = super.Ref.Type.Ref.Base.UIName;
-                                
-                            }
-                            
-                        }
-                        catch (Exception ex)
-                        {
-                            CoraUtils.PrintException(ex);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoraUtils.PrintException(ex);
-                }
-                yield return CoroutineUtils.WaitForSeconds(1);
-            }
-            
-        }
-
-        /// <summary>
-        /// 充能AI超级武器：让指定的阵营的指定超级武器充能，超级武器的类型由superWeaponName指定
-        /// </summary>
-        /// <param name="house"></param>
-        /// <param name="superWeaponName"></param>
-        public static void ChargeHouseSuperWeapon(Pointer<HouseClass> house, string superWeaponName = "NukeSpecial")
-        {
-            try
-            {
-                SwizzleablePointer<SuperWeaponTypeClass> pSWType = new SwizzleablePointer<SuperWeaponTypeClass>(IntPtr.Zero);
-                
-                var parser = Parsers.GetParser<Pointer<SuperWeaponTypeClass>>();
-                parser.Parse(superWeaponName, ref pSWType.Pointer);
-
-                if (pSWType.IsNull)
-                {
-                    CoraUtils.Log($"充能失败：未找到超级武器类型 {superWeaponName}");
-                    return;
-                }
-                Pointer<SuperClass> pSuper = house.Ref.FindSuperWeapon(pSWType);
-                if (pSuper.IsNull)
-                {
-                    CoraUtils.Log($"充能失败：HouseClass未拥有超级武器 {superWeaponName}");
-                    return;
-                }
-                
-                pSuper.Ref.SetCharge(100);
-                pSuper.Ref.IsCharged = true;
-            }
-            catch (Exception ex)
-            {
-                _ = ex;
-                CoraUtils.PrintException(ex);
-            }
-        }
-
-
-        
-
-        /// <summary>
-        /// 赠送当前玩家金钱：给当前玩家增加指定数量的金钱，金额由money参数指定。这个方法会检查money参数是否为正数且不超过int.MaxValue，如果不合法则会记录日志并跳过赠送；如果合法则会调用游戏内的方法增加玩家的金钱。这个方法可以用来实现通过外部输入触发增加金钱的功能，例如通过弹幕指令或其他事件。
-        /// </summary>
-        /// <param name="money"></param>
-        [HandleProcessCorruptedStateExceptions]
-        public static void GiveCurrentPlayerMoney(int money)
-        {
-            try
-            {
-                int giveMoney = money;
-                if (giveMoney > int.MaxValue || giveMoney < 0) // 负数也直接跳过（防止溢出成负）
-                {
-                    CoraUtils.Log($"送金额溢出，跳过：{giveMoney}（最大值：{int.MaxValue}）");
-                    PrintMessage($"赠送金额溢出，跳过：{giveMoney}（最大值：{int.MaxValue}）", ColorSchemeIndex.Red);
-                    return;
-                }
-                if (HouseClass.Player.Ref.Available_Money() < 0)
-                {
-                    HouseClass.Player.Ref.GiveMoney(HouseClass.Player.Ref.Available_Money() * -1);//
-                    CoraUtils.Log($"当前资金异常，已修正为0");
-                    PrintMessage($"当前资金异常，已修正为0", ColorSchemeIndex.Red);
-                }
-                
-                HouseClass.Player.Ref.GiveMoney(giveMoney);
-            
-            }
-            catch (Exception ex)
-            {
-                CoraUtils.PrintException(ex);
-            }
-        }
-
-        
-        
-
-        [HandleProcessCorruptedStateExceptions]
-        
-        private static IEnumerator GetAllHouseInfo()
-        {
-            
-            var allHouses = HouseClass.Array;
-            if (allHouses.Count <= 0)
-            {
-                CoraUtils.Log("当前无活跃阵营（游戏可能未进入对局）");
-                yield return null;
-            }
-            
-            Logger.Log($"=== 开始遍历所有活跃阵营（共 {allHouses.Count} 个）===");
-            try
-            {
-                foreach (var house in HouseClass.Array)
-                {
-                    if (house.IsNull)
-                    {
-                        CoraUtils.Log("  - 空指针");
-                        continue;
-                    }
-
-                    if (house.Ref.Type.IsNull)
-                    {
-                        CoraUtils.Log("GetAllAIHouseIndex: house type is null, skipping this house");
-                        continue;
-                    }
-
-                    Logger.Log($"  --------------Side Index {house.Ref.Type.Ref.SideIndex}  Array Index {house.Ref.ArrayIndex}  ----------------");
-                    Logger.Log($"  - 玩家：{house.Ref.Type.Ref.Base.UIName}");
-                    Logger.Log($"  - 阵营ID：{house.Ref.Type.Ref.Base.ID}");
-                    
-
-                    Logger.Log($"  - 是否当前玩家：{(house.Ref.CurrentPlayer ? "是" : "否")}");
-
-
-                    Logger.Log($"  - AI难度：{house.Ref.AIDifficulty}");
-                    Logger.Log($"  - IQLevel：{house.Ref.IQLevel}");
-                    Logger.Log($"  - IQLevel2：{house.Ref.IQLevel2}");
-                    Logger.Log($"  - 建筑数量：{house.Ref.Buildings.Count}");
-                    Logger.Log($"  - 所属势力：{house.Ref.Type.Ref.Suffix}");
-                    Logger.Log($"  - 当前资金：{house.Ref.Available_Money()}");
-                    Logger.Log($"  - 控制类型：{(house.Ref.ControlledByHuman() ? "玩家" : "AI")}");
-                    string isWinner = house.Ref.IsWinner ? "是" : "否";
-                    string isLoser = house.Ref.IsLoser ? "是" : "否";
-
-                    Logger.Log($"  - IsWin：{isWinner}");
-                    Logger.Log($"  - IsLose：{isLoser}");
-                    // Logger.Log($"  - 正在建造:{factoryProducing.Ref.Production.Value.ToString() ?? "无"}");
-                    Logger.Log($"  -----------------------------------------------------");
-
-                }
-                
-            }
-            catch (Exception ex)
-            {
-                _ = ex;
-                CoraUtils.PrintException(ex);
-            }
-            yield return null;
-        }
-
+       
+        #region 弹幕相关方法
         [HandleProcessCorruptedStateExceptions]
         
         private void JoinRoom(string userName)
         {
-            string join_msg = $"{userName} 加入了直播间!";
-            PrintMessage(join_msg, ColorSchemeIndex.Orange, 150, true);
+           
         }
 
 
@@ -866,170 +599,28 @@ namespace Extension.CoraExtension
         
         private static void OnGift(string userName, string giftName, string count)
         {
-            switch (giftName)
-            {
-                case "小花花":
-                    {
-                        
-                        // 启动子协程处理铁幕逻辑
-                        string give_msg = $"{userName} 送的 {giftName},获得铁幕!";
-                        PrintMessage(give_msg, ColorSchemeIndex.Orange);
-                        _coroutineSystem.StartCoroutine(IronCurtainGiftCoroutine(count));
-                    }
-                    break;
-
-                case "嘉年华":
-                    {
-                        foreach (var item in HouseClass.Array)
-                        {
-                            if (item.IsNotNull)
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                foreach (var super in item.Ref.Supers)
-                                {
-                                    if(super.Ref.Type.Convert<AbstractTypeClass>().Ref.ID  == "NukeSpecial")
-                                    {
-                                        super.Ref.SetCharge(100);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case "人气票":
-                case "助力票":
-                    {
-                        try
-                        {
-                            int giveMoney = 10 * int.Parse(count);
-                            string give_msg = $"{userName} 送的 {giftName},获得资金: {giveMoney}!";
-                            PrintMessage(give_msg, ColorSchemeIndex.Orange, 150);
-                            GiveCurrentPlayerMoney(giveMoney);
-                            int currentMoney = HouseClass.Player.Ref.Available_Money();
-                            string total_msg = $"当前资金: {currentMoney}";
-                        }
-                        catch (Exception ex)
-                        {
-                            _ = ex;
-                            CoraUtils.PrintException(ex);
-                        }
-                    }
-                    break;
-                default:
-                    PrintMessage($"未处理的礼物: {giftName} x {count} from {userName}", ColorSchemeIndex.Yellow, 150);
-                    break;
-            }
+           
         }
 
-        /// <summary>
-        /// 小花花礼物处理协程
-        /// </summary>
-        private static IEnumerator IronCurtainGiftCoroutine(string count)
-        {
-                int buildingsCount = 0;
-                Random random = new Random();
-                try
-                {
-                    buildingsCount = HouseClass.Player.Ref.Buildings.Count;
-                }
-                catch (Exception ex)
-                {
-                    CoraUtils.PrintException(ex);
-                }
-                for (int i = 0; i < int.Parse(count); i++)
-                {
-                    try
-                    {
-                        int randomNumber = random.Next(buildingsCount);
-                        LancherSuperWeapon(HouseClass.Player, HouseClass.Player.Ref.Buildings[0].Ref.BaseAbstract.GetThisPointer(), "IronCurtain");
-                    }
-                    catch (Exception ex)
-                    {
-                        CoraUtils.PrintException(ex);
-                    }
-                     yield return CoroutineUtils.WaitForSeconds(0.5);  // 等待下一帧再继续执行下一个铁幕
-                }
-            
-        }
+        
 
         [HandleProcessCorruptedStateExceptions]
         
         private static void OnChat(string userName, string content)
         {
-            try
-            {
-                PrintMessage($"{userName} 说: {content}", ColorSchemeIndex.White, 150, true);
-            }
-            catch (Exception ex)
-            {
-                _ = ex;
-            }
-
-            switch (content)
-            {
-                case "666":
-                    {
-                        try
-                        {
-                            int giveMoney = 666;
-                            string give_msg = $"{userName}发送666,获得资金: {giveMoney.ToString()}!";
-                            GiveCurrentPlayerMoney(giveMoney);
-                            int currentMoney = HouseClass.Player.Ref.Available_Money();
-                            string total_msg = $"当前资金: {currentMoney}";
-                            PrintMessage(give_msg, ColorSchemeIndex.Orange, 150);
-                        }
-                        catch (Exception ex)
-                        {
-                            _ = ex;
-                            CoraUtils.PrintException(ex);
-                        }
-                    }
-                    break;
-                case "6":
-                    {
-                        try
-                        {
-                            int giveMoney = 60;
-                            string give_msg = $"{userName}发送6,获得资金: {giveMoney.ToString()}!";
-                            GiveCurrentPlayerMoney(giveMoney);
-                            int currentMoney = HouseClass.Player.Ref.Available_Money();
-                            string total_msg = $"当前资金: {currentMoney}";
-                            PrintMessage(give_msg, ColorSchemeIndex.Orange, 150);
-                        }
-                        catch (Exception ex)
-                        {
-                            _ = ex;
-                            CoraUtils.PrintException(ex);
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
+           
         }
 
         [HandleProcessCorruptedStateExceptions]
         
         private static void OnLike(string userName, string count, string total)
         {
-            try
-            {
-                int giveMoney = int.Parse(count) * 100;
-                string give_msg = $"{userName}点赞{count}次,获得资金: {giveMoney * int.Parse(count)}!";
-                GiveCurrentPlayerMoney(giveMoney);
-                int currentMoney = HouseClass.Player.Ref.Available_Money();
-                string total_msg = $"当前资金: {currentMoney}";
-                PrintMessage(give_msg, ColorSchemeIndex.Orange, 150, true);
-            }
-            catch (Exception ex)
-            {
-                _ = ex;
-                CoraUtils.PrintException(ex);
-            }
+            
         }
+
+
+        #endregion
+
 
         #region  热键方法直接执行
 
@@ -1047,7 +638,7 @@ namespace Extension.CoraExtension
                 bIsAIControlEnable = !bIsAIControlEnable;
                 AIControl(HouseClass.Player, bIsAIControlEnable);
             }else{
-                CoraUtils.Log("已经禁止联机使用");
+                Logger.Log("已经禁止联机使用");
             }
            
         }
@@ -1065,8 +656,8 @@ namespace Extension.CoraExtension
             for (int i = 0; i < count; i++)
             {
                 SendCoraPlaceEvent(unitIDs[random.Next(unitIDs.Length)]);
-                SendCoraPlaceEvent(unitIDs[random.Next(unitIDs.Length)]);
-                PlaceTechno(unitIDs2[random.Next(unitIDs2.Length)],HouseClass.Player);
+                SendCoraPlaceEvent(unitIDs2[random.Next(unitIDs.Length)]);
+                
             }
         
            
@@ -1086,7 +677,7 @@ namespace Extension.CoraExtension
                     Unknown_0 = money      
                 }
             );
-            PrintMessage($"发送资金修改事件: {money}");
+            MessageListClass.Instance.PrintMessage($"发送资金修改事件: {money}");
         }
         public static void SendCoraSpecialPlaceEvent(string id)
         {
@@ -1100,7 +691,7 @@ namespace Extension.CoraExtension
                     Location = cell
                 }
             );
-            PrintMessage($"发送放置超武事件:{SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Find(id).Convert<AbstractTypeClass>().Ref.UIName} 地图坐标  X:{DisplayClass.Display_ZoneCell.X} Y:{DisplayClass.Display_ZoneCell.Y}");
+            MessageListClass.Instance.PrintMessage($"发送放置超武事件:{SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Find(id).Convert<AbstractTypeClass>().Ref.UIName} 地图坐标  X:{DisplayClass.Display_ZoneCell.X} Y:{DisplayClass.Display_ZoneCell.Y}");
         }
 
         public static void SendCoraPlaceEvent(string ID)
@@ -1126,7 +717,7 @@ namespace Extension.CoraExtension
                 );
                 
 
-                CoraUtils.Log($"发送自定义放置事件: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType}");
+                Logger.Log($"发送自定义放置事件: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType}");
             }catch (Exception ex)
             {
                 Logger.PrintException(ex);
@@ -1149,33 +740,11 @@ namespace Extension.CoraExtension
                     IsNaval = nIsNaval
                 }
             );
-            CoraUtils.Log($"发送生产事件: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType}");
+            Logger.Log($"发送生产事件: \nUnitName:{sUnitName} \nIsNaval:{nIsNaval} \nRTTIType:{abstractType}");
             
         }
      
-        public static void SendDanmuEvent()
-        {
-            try
-            {
-                string nickname = "可乐";
-                string msg = "咕咕嘎嘎";
-                NetworkHandle<Danmu>.Send(
-                (byte)CoraNetworkEvents.CoraDanmu,
-                    new Danmu
-                    {
-                        Type = DanmuType.Message,
-                        Nickname = new UniString(nickname),
-                        Message = new UniString(msg),
 
-                    }
-                );
-                
-            }catch (Exception ex)
-            {
-                Logger.PrintException(ex);
-            }
-            
-        }
 
         #endregion
 

@@ -651,13 +651,12 @@ namespace Extension.CoraExtension
             
             string[] unitIDs = CoraUtils.MainToolsConfig("PlayerBaseConfig").GetList<string>("RandomInfantryUnitID");
             string[] unitIDs2 = CoraUtils.MainToolsConfig("PlayerBaseConfig").GetList<string>("RandomInfantryUnitID2");
-            
+            string[] MargedUnitList = unitIDs.Concat(unitIDs2).ToArray();
             Random random = new Random();
             for (int i = 0; i < count; i++)
             {
-                SendCoraPlaceEvent(unitIDs[random.Next(unitIDs.Length)]);
-                SendCoraPlaceEvent(unitIDs2[random.Next(unitIDs.Length)]);
-                
+                SendCoraPlaceEvent(MargedUnitList[random.Next(MargedUnitList.Length)]);
+              
             }
         
            
@@ -704,7 +703,7 @@ namespace Extension.CoraExtension
                 AbstractType abstractType = pTechnoType.Convert<AbstractClass>().Ref.WhatAmI();
                 int nIsNaval = pTechnoType.Ref.IsNaval ? 1 : 0;
                 string sUnitName = pTechnoType.Convert<AbstractTypeClass>().Ref.UIName;
-                CellStruct lastCell = CellClass.Coord2Cell(TechnoPlacer.GetPlaceNearCoord(pTechnoType,cell));
+              
                 NetworkHandle<Place>.Send(
                     (byte)CoraNetworkEvents.CoraPlace,
                     new Place

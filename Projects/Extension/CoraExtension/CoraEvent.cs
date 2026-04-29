@@ -16,22 +16,7 @@ namespace Extension.CoraExtension
        
         public static void RegisterEvent()
         {
-            // #region 网络事件注册
-            PlaceEventRsp placeEventRsp = new PlaceEventRsp();
-            Network.NetworkHandles.Add((byte)NetworkEvents.Place, new PlaceEventRsp());
-            Network.NetworkHandles.Add((byte)NetworkEvents.Produce, new ProductEventRsp());
-            Network.NetworkHandles.Add((byte)NetworkEvents.Abandon, new AbandonEventRsp());
-            Network.NetworkHandles.Add((byte)NetworkEvents.AbandonAll,  new AbandonAllEventRsp());
-            Network.NetworkHandles.Add((byte)NetworkEvents.SpecialPlace,new SpecialPlaceEventRsp());
-            Network.NetworkHandles.Add((byte)NetworkEvents.MegaMission,new MegamissionEventRsp());
-            Network.NetworkHandles.Add((byte)NetworkEvents.Deploy,new DeployEventRsp());
-            
-            TimingEventRsp timingEventRsp  = new TimingEventRsp();
-            Network.NetworkHandles.Add(timingEventRsp.Index,timingEventRsp);
-            ProcessTimeEventRsp processTimeEventRsp = new ProcessTimeEventRsp();
-            Network.NetworkHandles.Add(processTimeEventRsp.Index,processTimeEventRsp);
-            // #endregion
-            #region 自定义事件
+            #region 自定义事件注册
             Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraPlace,new CoraPlaceEventRsp());
             Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraSpecialPlace,new CoraSpecialPlaceEventRsp());
             Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraProduceComple,new CoraProduceCompleEventRsp());
@@ -48,319 +33,6 @@ namespace Extension.CoraExtension
     }
   
     
-    #region 事件类
-    unsafe class PlaceEventRsp : NetworkHandle<EventData>
-    {
-        // 定义事件索引（确保唯一）
-        public override byte Index => (byte)NetworkEvents.Place;
-        
-        // 定义数据长度
-        
-        // 定义事件名称（用于调试）
-        public override string Name => "放置事件";
-
-        public override uint Lenth => (uint)sizeof(EventData);
-
-
-        // 实现事件响应逻辑
-        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
-        {
-            // 在这里处理接收到的事件
-            var data = pArg.Ref;
-            // pFactory.Ref.CompletedProduction();
-            // 可以通过 pEvent 获取发送方信息
-            var senderHouseIndex = pEvent.Ref.HouseIndex;
-            var frame = pEvent.Ref.Frame; 
-            CoraUtils.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Place.HeapID} \nIsNaval:{data.Place.IsNaval} \nLocation:{data.Place.Location.X},{data.Place.Location.Y} \nRTTIType:{data.Place.RTTIType}");
-            //游戏里面会创建FactoryClass 根据类型设置到HouseClass 的 primaryFactoryForXXX  
-        }
-    }
-
-
-    unsafe class SpecialPlaceEventRsp : NetworkHandle<EventData>
-    {
-        // 定义事件索引（确保唯一）
-        public override byte Index => (byte)NetworkEvents.SpecialPlace;
-        
-        // 定义数据长度
-        
-        // 定义事件名称（用于调试）
-        public override string Name => "超武放置事件";
-
-        public override uint Lenth => (uint)sizeof(EventData);
-
-
-        // 实现事件响应逻辑
-        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
-        {
-            // 在这里处理接收到的事件
-            var data = pArg.Ref;
-            // pFactory.Ref.CompletedProduction();
-            // 可以通过 pEvent 获取发送方信息
-            var senderHouseIndex = pEvent.Ref.HouseIndex;
-            var frame = pEvent.Ref.Frame; 
-            
-   
-            Pointer<SuperWeaponTypeClass> pSuperWeaponTypeClass = SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Array[data.SpecialPlace.ID]; 
-            string superWeaponName = pSuperWeaponTypeClass.Convert<AbstractTypeClass>().Ref.UIName;
-            string superWeaponID = pSuperWeaponTypeClass.Convert<AbstractTypeClass>().Ref.ID;
-            CoraUtils.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \nID: {superWeaponID} \nName: {superWeaponName} \nLocation:{data.SpecialPlace.Location.X},{data.SpecialPlace.Location.Y}");
-        }
-    }
-    //点击建筑栏的一个单位  
-    //发送 SendProduceEvent  
-    //处理事件 Produce   
-    // 使用 TechnoTypeClass.GetByTypeAndIndex(abs,index)获取具体单位类型
-    //创建FactoryClass并设置正在生产的单位类型为TechnoTypeClass.GetByTypeAndIndex(abs,index)
-    //当生产完成时，FactoryClass调用CompletedProduction
-    //
-    unsafe class ProductEventRsp : NetworkHandle<EventData>
-    {
-        // 定义事件索引（确保唯一）
-        public override byte Index => (byte)NetworkEvents.Produce;
-        
-        // 定义数据长度
-        
-        // 定义事件名称（用于调试）
-        public override string Name => "开始生产事件";
-
-        public override uint Lenth => (uint)sizeof(EventData);
-
-
-        // 实现事件响应逻辑
-        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
-        {
-            // 在这里处理接收到的事件
-            var data = pArg.Ref;
-            
-            var senderHouseIndex = pEvent.Ref.HouseIndex;
-            var frame = pEvent.Ref.Frame; 
-            var pTechnoType = TechnoTypeClass.GetByTypeAndIndex((AbstractType)data.Production.RTTI_ID, data.Production.Heap_ID);
-            var pAbstractTypeClass = pTechnoType.Convert<AbstractTypeClass>();
-            CoraUtils.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Production.Heap_ID} \nName: {pAbstractTypeClass.Ref.UIName} \nID: {pAbstractTypeClass.Ref.ID} \nIsNaval:{data.Production.IsNaval} \nRTTI_ID:{(AbstractType)data.Production.RTTI_ID}");
-            
-        }
-    }
-
-    unsafe class AbandonEventRsp : NetworkHandle<EventData>
-    {
-        // 定义事件索引（确保唯一）
-        public override byte Index => (byte)NetworkEvents.Abandon;
-        
-        // 定义数据长度
-        
-        // 定义事件名称（用于调试）
-        public override string Name => "放弃生产事件";
-
-        public override uint Lenth => (uint)sizeof(EventData);
-
-
-        // 实现事件响应逻辑
-        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
-        {
-            // 在这里处理接收到的事件
-            var data = pArg.Ref;
-            
-            var senderHouseIndex = pEvent.Ref.HouseIndex;
-            var frame = pEvent.Ref.Frame; 
-            var pTechnoType = TechnoTypeClass.GetByTypeAndIndex((AbstractType)data.Production.RTTI_ID, data.Production.Heap_ID);
-            var pAbstractTypeClass = pTechnoType.Convert<AbstractTypeClass>();
-            CoraUtils.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Production.Heap_ID} \nName: {pAbstractTypeClass.Ref.UIName} \nID: {pAbstractTypeClass.Ref.ID} \nIsNaval:{data.Production.IsNaval} \nRTTI_ID:{(AbstractType)data.Production.RTTI_ID}");
-            
-        }
-    }
-   unsafe class AbandonAllEventRsp : NetworkHandle<EventData>
-    {
-        // 定义事件索引（确保唯一）
-        public override byte Index => (byte)NetworkEvents.AbandonAll;
-        
-        // 定义数据长度
-        
-        // 定义事件名称（用于调试）
-        public override string Name => "放弃所有生产事件";
-
-        public override uint Lenth => (uint)sizeof(EventData);
-
-
-        // 实现事件响应逻辑
-        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
-        {
-            // 在这里处理接收到的事件
-            var data = pArg.Ref;
-            
-            var senderHouseIndex = pEvent.Ref.HouseIndex;
-            var frame = pEvent.Ref.Frame; 
-            var pTechnoType = TechnoTypeClass.GetByTypeAndIndex((AbstractType)data.Production.RTTI_ID, data.Production.Heap_ID);
-            var pAbstractTypeClass = pTechnoType.Convert<AbstractTypeClass>();
-            CoraUtils.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Production.Heap_ID} \nName: {pAbstractTypeClass.Ref.UIName} \nID: {pAbstractTypeClass.Ref.ID} \nIsNaval:{data.Production.IsNaval} \nRTTI_ID:{(AbstractType)data.Production.RTTI_ID}");
-            
-        }
-    }
-
-  
-    unsafe class MegamissionEventRsp : NetworkHandle<EventData>
-    {
-        // 定义事件索引（确保唯一）
-        public override byte Index => (byte)NetworkEvents.MegaMission;
-        
-        // 定义数据长度
-        
-        // 定义事件名称（用于调试）
-        public override string Name => "Megamission事件";
-
-        public override uint Lenth => (uint)sizeof(EventData);
-
-
-        // 实现事件响应逻辑
-        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
-        {
-            // 在这里处理接收到的事件
-            var data = pArg.Ref;
-            
-            var senderHouseIndex = pEvent.Ref.HouseIndex;
-            var frame = pEvent.Ref.Frame; 
-            
-            if (data.MegaMission.Whom.m_RTTI != 0)
-            {
-                Logger.Log("##########################################################");
-                Logger.Log($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} Whom \nm_ID:{data.MegaMission.Whom.m_ID} \nm_RTTI:{(AbstractType)data.MegaMission.Whom.m_RTTI}");
-                DProcess(data.MegaMission.Whom);
-                Logger.Log("##########################################################");
-            }
-            if (data.MegaMission.Target.m_RTTI != 0)
-            {
-                Logger.Log("##########################################################");
-                Logger.Log($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} Target \nm_ID:{data.MegaMission.Target.m_ID} \nm_RTTI:{(AbstractType)data.MegaMission.Target.m_RTTI}");
-                DProcess(data.MegaMission.Target);
-                Logger.Log("##########################################################");
-            }
-            if (data.MegaMission.Destination.m_RTTI != 0)
-            {
-                Logger.Log("##########################################################");
-                Logger.Log($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} Destination \nm_ID:{data.MegaMission.Destination.m_ID} \nm_RTTI:{(AbstractType)data.MegaMission.Destination.m_RTTI}");
-                DProcess(data.MegaMission.Destination);
-                Logger.Log("##########################################################");
-            }
-                
-        }       
-        
-        [HandleProcessCorruptedStateExceptions]
-        void DProcess(TargetClass target)
-        {
-            AbstractType abstractType = (AbstractType)target.m_RTTI;
-            switch (abstractType)
-            {
-                case AbstractType.Cell:
-                    try
-                    {
-                        CellClass cell = target.UNPACK_Cell().Ref;
-                        Logger.Log($"Cell X:{cell.MapCoords.X} Y:{cell.MapCoords.Y}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.PrintException(ex);
-                    }
-                    
-                break;
-                case AbstractType.Abstract:
-                    try
-                    {
-                        AbstractClass  pAbstractClass = target.UNPACK_Abstract().Ref;
-                        Pointer<TechnoClass> pTechnoClass = target.UNPACK_Abstract().Convert<TechnoClass>();
-                        Pointer<AbstractTypeClass>  pAbstractTypeClass = pTechnoClass.Ref.Type.Convert<AbstractTypeClass>();
-                        
-                        Logger.Log($"UIName:{pAbstractTypeClass.Ref.UIName}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.PrintException(ex);
-                    }
-                break;
-                default:
-                break;
-            }
-        }
-    }
-
-    unsafe class DeployEventRsp : NetworkHandle<EventData>
-    {
-        // 定义事件索引（确保唯一）
-        public override byte Index => (byte)NetworkEvents.Deploy;
-        
-        // 定义数据长度
-        
-        // 定义事件名称（用于调试）
-        public override string Name => "部署事件";
-
-        public override uint Lenth => (uint)sizeof(EventData);
-
-
-        // 实现事件响应逻辑
-        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
-        {
-            // 在这里处理接收到的事件
-            var data = pArg.Ref;
-            
-            var senderHouseIndex = pEvent.Ref.HouseIndex;
-            var frame = pEvent.Ref.Frame; 
-            Logger.Log($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} ");
-            
-        }
-    }
-
-    unsafe class ProcessTimeEventRsp : NetworkHandle<EventData>
-    {
-        // 定义事件索引（确保唯一）
-        public override byte Index => (byte)NetworkEvents.ProcessTime;
-        
-        // 定义数据长度
-        
-        // 定义事件名称（用于调试）
-        public override string Name => "进度事件";
-
-        public override uint Lenth => (uint)sizeof(EventData);
-
-
-        // 实现事件响应逻辑
-        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
-        {
-            // 在这里处理接收到的事件
-            var data = pArg.Ref;
-            
-            var senderHouseIndex = pEvent.Ref.HouseIndex;
-            var frame = pEvent.Ref.Frame; 
-            Logger.Log($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} ");
-            
-        }
-    }
-    unsafe class TimingEventRsp : NetworkHandle<EventData>
-    {
-        // 定义事件索引（确保唯一）
-        public override byte Index => (byte)NetworkEvents.Timing;
-        
-        // 定义数据长度
-        
-        // 定义事件名称（用于调试）
-        public override string Name => "定时事件";
-
-        public override uint Lenth => (uint)sizeof(EventData);
-
-
-        // 实现事件响应逻辑
-        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
-        {
-            // 在这里处理接收到的事件
-            var data = pArg.Ref;
-            
-            var senderHouseIndex = pEvent.Ref.HouseIndex;
-            var frame = pEvent.Ref.Frame; 
-            Logger.Log($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} ");
-            
-        }
-    }
-
-    
-    #endregion
 
     #region 自定义事件
 
@@ -408,31 +80,12 @@ namespace Extension.CoraExtension
                 return false;
             }
             Pointer<TechnoClass> pTechno  = obj.Convert<TechnoClass>();
-            pTechno.Convert<AbstractClass>().CastIf(AbstractType.Building, out Pointer<BuildingClass> pBuilding);
-            if (!pBuilding.IsNull)
+            if (pTechno.IsNull)
             {
-                pBuilding.Ref.Base.BaseMission.QueueMission(Mission.Construction, false);
-            }
-            else
-            {
-                var Guard = !pBuilding.IsNull || pHouse.Ref.ControlledByHuman();
-                var mission = Guard ? Mission.Guard : Mission.Hunt;
-                pTechno.Ref.BaseMission.QueueMission(mission, false);
-            }
-           
-            
-            var isPut = pTechno.Ref.Base.Put(CellClass.Cell2Coord(placeCoords), (Direction)7u);
-            if (isPut)
-            {
-                Logger.Log($"创建{sUnitName}成功 在地图坐标  X:{placeCoords.X} Y:{placeCoords.Y}");
-                return true;
-            }
-            else
-            {
-                pTechno.Ref.Base.UnInit();
+                Logger.Log($"生成{sUnitName}失败 pTechno is NULL");
                 return false;
             }
-           
+            return TechnoPlacer.PlaceTechnoNear(pTechno,placeCoords,true);
             
         }
     }
@@ -540,7 +193,6 @@ namespace Extension.CoraExtension
                     return;
                 }
                 
-                Logger.Log("FireSuperWeapon({2}):0x({3:X}) -> ({0}, {1})", location.X, location.Y, pSuperWeaponTypeClass.Ref.Base.ID, (int)pSuper);
                 pSuper.Ref.SetCharge(100);
                 pSuper.Ref.IsCharged = true;
                 pSuper.Ref.Launch(location, pHouse.Ref.PlayerControl);
@@ -690,7 +342,7 @@ namespace Extension.CoraExtension
             {
                 return false;   
             }
-            pFactory.Ref.Production.Step = 54;
+            // pFactory.Ref.Production.Step = 54;
             
             return true;
 

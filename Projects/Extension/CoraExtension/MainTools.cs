@@ -391,25 +391,26 @@ namespace Extension.CoraExtension
             {
                 for (var index = 0 ; index < HouseClass.Player.Ref.Supers.Count;index++)
                 {
-                    try
+                    if (HouseClass.Player.Ref.Supers[index].IsNull)
                     {
-                        if (HouseClass.Player.Ref.Supers[index].IsNull)
-                        {
-                            continue;
-                        }
-                        NetworkHandle<UnknownTuple>.Send(
-                            (byte)CoraNetworkEvents.CoraSpecialCharge,
-                            new UnknownTuple
-                            {
-                                Unknown_0 = index,
-
-                            }
-                        );
-                    }catch(Exception ex)
-                    {
-                        Logger.PrintException(ex);
+                        yield return new WaitForFrames(5);
+                        continue;
                     }
-                    yield return new WaitForFrames(Game.CurrentFrameRate *1);
+                    if (HouseClass.Player.Ref.Supers[index].Ref.IsCharged)
+                    {
+                        yield return new WaitForFrames(5);
+                        continue;
+                    }
+                    NetworkHandle<UnknownTuple>.Send(
+                        (byte)CoraNetworkEvents.CoraSpecialCharge,
+                        new UnknownTuple
+                        {
+                            Unknown_0 = index,
+
+                        }
+                    );
+                    
+                    yield return new WaitForFrames(5);
                 }
                
             }

@@ -660,7 +660,7 @@ namespace Extension.CoraExtension
         // 定义数据长度
         
         // 定义事件名称（用于调试）
-        public override string Name => "自定义工厂建造间隔修改事件";
+        public override string Name => "自定义建造完成事件";
 
         public override uint Lenth => (uint)sizeof(EventData);
 

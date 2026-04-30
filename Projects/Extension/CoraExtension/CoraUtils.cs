@@ -352,7 +352,7 @@ namespace Extension.CoraExtension {
 
             }catch(Exception ex)
             {
-                CoraUtils.PrintException(ex);
+                Logger.PrintException(ex);
             }
         }
 
@@ -415,7 +415,7 @@ namespace Extension.CoraExtension {
             }
             catch(Exception ex)
             {
-                CoraUtils.PrintException(ex);
+                Logger.PrintException(ex);
             }
         }
 
@@ -448,7 +448,7 @@ namespace Extension.CoraExtension {
 
             }catch(Exception ex)
             {
-                CoraUtils.PrintException(ex);
+                Logger.PrintException(ex);
             }
         }
 
@@ -482,71 +482,7 @@ namespace Extension.CoraExtension {
             }
             return result;
         }
-       
-        #region 日志工具
-        public static void Log(string format, params object[] args)
-        {
-            string str = string.Format(format, args);
-            Logger.Log(str);
-            DebugLog.Logln(format,args);
-        }
-
-        public static void LogEx(string format, params object[] args)
-        {
-            string str = string.Format(format, args);
-            Logger.Log("################################################");
-            DebugLog.Logln("################################################");
-            Logger.Log(str);
-            DebugLog.Logln(format,args);
-            Logger.Log("################################################");
-            DebugLog.Logln("################################################");
-        }
-        public static void LogError(string format, params object[] args)
-        {
-            string str = string.Format(format, args);
-            LogError(str);
-            DebugLog.Logln(format, args);
-        }
-
-        public static void LogError(string str)
-        {
-            Logger.LogWithColor("[Error] " + str, ConsoleColor.Red);
-            DebugLog.Logln(str);
-        }
-
-        public static void PrintException(Exception ex)
-        {
-
-            Logger.PrintException(ex);
-
-            DebugLog.Logln("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", ConsoleColor.DarkRed);
-            PrintExceptionBase(ex);
-            DebugLog.Logln("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", ConsoleColor.DarkRed);
-
-        }
-        private static void PrintExceptionBase(Exception e)
-        {
-             DebugLog.Logln("{0} info: ", e.GetType().FullName);
-             DebugLog.Logln("Message: " + e.Message);
-             DebugLog.Logln("Source: " + e.Source);
-            DebugLog.Logln("TargetSite.Name: " + e.TargetSite?.Name);
-            DebugLog.Logln("Stacktrace: " + e.StackTrace);
-            if (e is ReflectionTypeLoadException { LoaderExceptions: var loaderExceptions })
-            {
-                foreach (Exception e2 in loaderExceptions)
-                {
-                    DebugLog.Logln("--------------------------------------------------------", ConsoleColor.DarkRed);
-                    PrintExceptionBase(e2);
-                }
-            }
-
-            if (e.InnerException != null)
-            {
-                DebugLog.Logln("--------------------------------------------------------", ConsoleColor.DarkRed);
-                PrintExceptionBase(e.InnerException);
-            }
-        }
-        #endregion
+ 
 
     }
 }

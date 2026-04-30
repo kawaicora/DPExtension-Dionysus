@@ -16,11 +16,19 @@ namespace Extension.CoraExtension
        
         public static void RegisterEvent()
         {
+            Network.NetworkHandles.Add((byte)NetworkEvents.Place,new PlaceEventRsp());
+            Network.NetworkHandles.Add((byte)NetworkEvents.SpecialPlace,new SpecialPlaceEventRsp());
+            Network.NetworkHandles.Add((byte)NetworkEvents.Abandon,new AbandonEventRsp());
+            Network.NetworkHandles.Add((byte)NetworkEvents.AbandonAll,new AbandonAllEventRsp());
+            Network.NetworkHandles.Add((byte)NetworkEvents.Produce,new ProductEventRsp());
+            Network.NetworkHandles.Add((byte)NetworkEvents.MegaMission,new MegamissionEventRsp());
+            Network.NetworkHandles.Add((byte)NetworkEvents.MegaMissionF,new MegamissionFEventRsp());
             #region 自定义事件注册
             Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraPlace,new CoraPlaceEventRsp());
             Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraSpecialPlace,new CoraSpecialPlaceEventRsp());
-            Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraProduceComple,new CoraProduceCompleEventRsp());
+            Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraProdutionComplete,new CoraProdutionCompleteEventRsp());
             Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraMoneyChange,new CoraMoneyChangeEventRsp());
+            Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraMoneySync,new CoraMoneySyncEventRsp());
             Network.NetworkHandles.Add((byte)CoraNetworkEvents.CoraSpecialCharge,new CoraSpecialChargeEventRsp());
             #endregion
 
@@ -33,6 +41,336 @@ namespace Extension.CoraExtension
     }
   
     
+
+
+
+    #region 原有事件
+            
+            
+    unsafe class ProductEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)NetworkEvents.Produce;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "开始生产事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+            var pTechnoType = TechnoTypeClass.GetByTypeAndIndex((AbstractType)data.Production.RTTI_ID, data.Production.Heap_ID);
+            var pAbstractTypeClass = pTechnoType.Convert<AbstractTypeClass>();
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Production.Heap_ID} \nName: {pAbstractTypeClass.Ref.UIName} \nID: {pAbstractTypeClass.Ref.ID} \nIsNaval:{data.Production.IsNaval} \nRTTI_ID:{(AbstractType)data.Production.RTTI_ID}");
+        }
+    }
+
+    unsafe class PlaceEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)NetworkEvents.Place;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "放置事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            // pFactory.Ref.CompletedProduction();
+            // 可以通过 pEvent 获取发送方信息
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Place.HeapID} \nIsNaval:{data.Place.IsNaval} \nLocation:{data.Place.Location.X},{data.Place.Location.Y} \nRTTIType:{data.Place.RTTIType}");
+            //游戏里面会创建FactoryClass 根据类型设置到HouseClass 的 primaryFactoryForXXX  
+        }
+    }
+
+
+    unsafe class SpecialPlaceEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)NetworkEvents.SpecialPlace;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "超武放置事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            // pFactory.Ref.CompletedProduction();
+            // 可以通过 pEvent 获取发送方信息
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+            
+   
+            Pointer<SuperWeaponTypeClass> pSuperWeaponTypeClass = SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Array[data.SpecialPlace.ID]; 
+            string superWeaponName = pSuperWeaponTypeClass.Convert<AbstractTypeClass>().Ref.UIName;
+            string superWeaponID = pSuperWeaponTypeClass.Convert<AbstractTypeClass>().Ref.ID;
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \nID: {superWeaponID} \nName: {superWeaponName} \nLocation:{data.SpecialPlace.Location.X},{data.SpecialPlace.Location.Y}");
+        }
+    }
+
+
+    unsafe class AbandonEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)NetworkEvents.Abandon;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "放弃生产事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+            var pTechnoType = TechnoTypeClass.GetByTypeAndIndex((AbstractType)data.Production.RTTI_ID, data.Production.Heap_ID);
+            var pAbstractTypeClass = pTechnoType.Convert<AbstractTypeClass>();
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Production.Heap_ID} \nName: {pAbstractTypeClass.Ref.UIName} \nID: {pAbstractTypeClass.Ref.ID} \nIsNaval:{data.Production.IsNaval} \nRTTI_ID:{(AbstractType)data.Production.RTTI_ID}");
+            
+        }
+    }
+    unsafe class AbandonAllEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)NetworkEvents.AbandonAll;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "放弃所有生产事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+            var pTechnoType = TechnoTypeClass.GetByTypeAndIndex((AbstractType)data.Production.RTTI_ID, data.Production.Heap_ID);
+            var pAbstractTypeClass = pTechnoType.Convert<AbstractTypeClass>();
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Production.Heap_ID} \nName: {pAbstractTypeClass.Ref.UIName} \nID: {pAbstractTypeClass.Ref.ID} \nIsNaval:{data.Production.IsNaval} \nRTTI_ID:{(AbstractType)data.Production.RTTI_ID}");
+            
+        }
+    }
+
+
+    unsafe class MegamissionEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)NetworkEvents.MegaMission;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "Megamission事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+            
+            string msg = "";
+            msg += "##########################################################\n";
+            msg += $"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n";
+            if (data.MegaMission.Whom.m_RTTI != 0)
+            {
+               
+                msg += $"Whom \nm_ID:{data.MegaMission.Whom.m_ID} \nm_RTTI:{(AbstractType)data.MegaMission.Whom.m_RTTI} \n";
+                msg += DProcess(data.MegaMission.Whom);
+                
+            }
+            if (data.MegaMission.Target.m_RTTI != 0)
+            {
+                msg += $"Target \nm_ID:{data.MegaMission.Target.m_ID} \nm_RTTI:{(AbstractType)data.MegaMission.Target.m_RTTI}";
+                msg += DProcess(data.MegaMission.Target);
+            }
+            if (data.MegaMission.Destination.m_RTTI != 0)
+            {
+                msg += $"Destination \nm_ID:{data.MegaMission.Destination.m_ID} \nm_RTTI:{(AbstractType)data.MegaMission.Destination.m_RTTI}";
+                msg += DProcess(data.MegaMission.Destination);
+                
+            }
+            msg += "##########################################################";
+            Logger.Log(msg);
+        }       
+        
+        [HandleProcessCorruptedStateExceptions]
+        protected string DProcess(TargetClass target)
+        {
+            string msg = "";
+            AbstractType abstractType = (AbstractType)target.m_RTTI;
+            switch (abstractType)
+            {
+                case AbstractType.Cell:
+                    try
+                    {
+                        CellClass cell = target.UNPACK_Cell().Ref;
+                        msg += $"Cell X:{cell.MapCoords.X} Y:{cell.MapCoords.Y} \n";
+                    }
+                    catch (Exception ex)
+                    {
+                        msg = "";
+                        Logger.PrintException(ex);
+                    }
+                    
+                break;
+                case AbstractType.Abstract:
+                    try
+                    {
+                        AbstractClass  pAbstractClass = target.UNPACK_Abstract().Ref;
+                        Pointer<TechnoClass> pTechnoClass = target.UNPACK_Abstract().Convert<TechnoClass>();
+                        Pointer<AbstractTypeClass>  pAbstractTypeClass = pTechnoClass.Ref.Type.Convert<AbstractTypeClass>();
+                        
+                        msg += $"UIName:{pAbstractTypeClass.Ref.UIName} \n";
+                    }
+                    catch (Exception ex)
+                    {
+                        msg = "";
+                        Logger.PrintException(ex);
+                    }
+                break;
+                default:
+                break;
+            }
+            return msg;
+        }
+    }
+
+    unsafe class MegamissionFEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)NetworkEvents.MegaMissionF;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "MegamissionF事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+            string msg = "";
+            msg += "##########################################################\n";
+            msg += $"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n";
+            if (data.MegaMission_F.Whom.m_RTTI != 0)
+            {
+               
+                msg += $"Whom \nm_ID:{data.MegaMission_F.Whom.m_ID} \nm_RTTI:{(AbstractType)data.MegaMission_F.Whom.m_RTTI} \n";
+                msg += DProcess(data.MegaMission_F.Whom);
+                
+            }
+            if (data.MegaMission_F.Target.m_RTTI != 0)
+            {
+                msg += $"Target \nm_ID:{data.MegaMission_F.Target.m_ID} \nm_RTTI:{(AbstractType)data.MegaMission_F.Target.m_RTTI}";
+                msg += DProcess(data.MegaMission_F.Target);
+            }
+            if (data.MegaMission_F.Destination.m_RTTI != 0)
+            {
+                msg += $"Destination \nm_ID:{data.MegaMission_F.Destination.m_ID} \nm_RTTI:{(AbstractType)data.MegaMission_F.Destination.m_RTTI}";
+                msg += DProcess(data.MegaMission_F.Destination);
+                Logger.Log("##########################################################");
+            }
+            msg += $"Speed:{data.MegaMission_F.Speed} \nMaxSpeed:{data.MegaMission_F.MaxSpeed}";
+            msg += "##########################################################";
+            Logger.Log(msg);
+        }       
+        
+        [HandleProcessCorruptedStateExceptions]
+        protected string DProcess(TargetClass target)
+        {
+            string msg = "";
+            AbstractType abstractType = (AbstractType)target.m_RTTI;
+            switch (abstractType)
+            {
+                case AbstractType.Cell:
+                    try
+                    {
+                        CellClass cell = target.UNPACK_Cell().Ref;
+                        msg += $"Cell X:{cell.MapCoords.X} Y:{cell.MapCoords.Y} \n";
+                    }
+                    catch (Exception ex)
+                    {
+                        msg = "";
+                        Logger.PrintException(ex);
+                    }
+                    
+                break;
+                case AbstractType.Abstract:
+                    try
+                    {
+                        AbstractClass  pAbstractClass = target.UNPACK_Abstract().Ref;
+                        Pointer<TechnoClass> pTechnoClass = target.UNPACK_Abstract().Convert<TechnoClass>();
+                        Pointer<AbstractTypeClass>  pAbstractTypeClass = pTechnoClass.Ref.Type.Convert<AbstractTypeClass>();
+                        
+                        msg += $"UIName:{pAbstractTypeClass.Ref.UIName} \n";
+                    }
+                    catch (Exception ex)
+                    {
+                        msg = "";
+                        Logger.PrintException(ex);
+                    }
+                break;
+                default:
+                break;
+            }
+            return msg;
+        }
+    }
+
+    
+    
+    #endregion
 
     #region 自定义事件
 
@@ -58,7 +396,9 @@ namespace Extension.CoraExtension
             // 可以通过 pEvent 获取发送方信息
             var senderHouseIndex = pEvent.Ref.HouseIndex;
             var frame = pEvent.Ref.Frame; 
-            CoraUtils.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Place.HeapID} \nIsNaval:{data.Place.IsNaval} \nLocation:{data.Place.Location.X},{data.Place.Location.Y} \nRTTIType:{data.Place.RTTIType}");
+            Pointer<TechnoTypeClass> pTechnoType =  TechnoTypeClass.GetByTypeAndIndex(data.Place.RTTIType,data.Place.HeapID);
+            Pointer<AbstractTypeClass> pAbstractTypeClass = pTechnoType.Convert<AbstractTypeClass>();
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Place.HeapID} \nName: {pAbstractTypeClass.Ref.UIName} \nID: {pAbstractTypeClass.Ref.ID} \nIsNaval:{data.Place.IsNaval} \nLocation:{data.Place.Location.X},{data.Place.Location.Y} \nRTTIType:{data.Place.RTTIType}");
             try
             {
                 DoPlace(senderHouseIndex, data.Place.HeapID, data.Place.IsNaval == 0 ? false : true, data.Place.Location, data.Place.RTTIType);
@@ -85,7 +425,7 @@ namespace Extension.CoraExtension
                 Logger.Log($"生成{sUnitName}失败 pTechno is NULL");
                 return false;
             }
-            return TechnoPlacer.PlaceTechnoNear(pTechno,placeCoords,true);
+            return TechnoPlacer.PlaceTechnoNear(pTechnoType,pHouse,placeCoords,false);
             
         }
     }
@@ -98,7 +438,49 @@ namespace Extension.CoraExtension
         // 定义数据长度
         
         // 定义事件名称（用于调试）
-        public override string Name => "自定义生产完成事件";
+        public override string Name => "自定义资金修改事件";
+
+        public override uint Lenth => (uint)sizeof(EventData);
+
+
+        // 实现事件响应逻辑
+        protected override void Respond(Pointer<EventClass> pEvent, Pointer<EventData> pArg)
+        {
+            // 在这里处理接收到的事件
+            var data = pArg.Ref;
+            // 可以通过 pEvent 获取发送方信息
+            var senderHouseIndex = pEvent.Ref.HouseIndex;
+            var frame = pEvent.Ref.Frame; 
+
+            int money = data.Unknown_Tuple.Unknown_0;
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex}  \nMoney:{money} \n");
+            try
+            {
+                DoMoneyChange(pEvent.Ref.HouseIndex,money);
+            }catch (Exception ex){
+                Logger.PrintException(ex);
+            }
+        }
+        protected bool DoMoneyChange(int senderHouseIndex, int money)
+        {
+            
+            Pointer<HouseClass> pHouse = HouseClass.Array[senderHouseIndex];
+            pHouse.Ref.TransactMoney(money);
+            return true;
+
+        }
+    }
+
+
+    unsafe class CoraMoneySyncEventRsp : NetworkHandle<EventData>
+    {
+        // 定义事件索引（确保唯一）
+        public override byte Index => (byte)CoraNetworkEvents.CoraMoneyChange;
+        
+        // 定义数据长度
+        
+        // 定义事件名称（用于调试）
+        public override string Name => "自定义资金同步事件";
 
         public override uint Lenth => (uint)sizeof(EventData);
 
@@ -114,26 +496,29 @@ namespace Extension.CoraExtension
             var frame = pEvent.Ref.Frame; 
 
             int money = data.Unknown_Tuple.Unknown_0;
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex}  \nMoney:{money} \n");
             try
             {
-                DoMoneyChange(pEvent.Ref.HouseIndex,money);
+                DoMoneySync(pEvent.Ref.HouseIndex,money);
             }catch (Exception ex){
                 Logger.PrintException(ex);
             }
-            
-            
-            
-   
         }
-        protected bool DoMoneyChange(int senderHouseIndex, int money)
+        protected bool DoMoneySync(int senderHouseIndex, int money)
         {
             
             Pointer<HouseClass> pHouse = HouseClass.Array[senderHouseIndex];
-            pHouse.Ref.TransactMoney(money);
+            if (pHouse.Ref.Available_Money() != money)
+            {
+                pHouse.Ref.Money = money;
+            }
+           
             return true;
 
         }
     }
+
+
     unsafe class CoraSpecialPlaceEventRsp : NetworkHandle<EventData>
     {
         // 定义事件索引（确保唯一）
@@ -161,6 +546,7 @@ namespace Extension.CoraExtension
             Pointer<SuperWeaponTypeClass> pSuperWeaponTypeClass = SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Array[data.SpecialPlace.ID]; 
             string superWeaponName = pSuperWeaponTypeClass.Convert<AbstractTypeClass>().Ref.UIName;
             string superWeaponID = pSuperWeaponTypeClass.Convert<AbstractTypeClass>().Ref.ID;
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \nID: {superWeaponID} \nName: {superWeaponName} \nLocation:{data.SpecialPlace.Location.X},{data.SpecialPlace.Location.Y}");
             try
             {
                 DoSpecialPlace(senderHouseIndex,data.SpecialPlace.ID,data.SpecialPlace.Location);
@@ -168,9 +554,7 @@ namespace Extension.CoraExtension
                 Logger.PrintException(ex);
             }
             
-            CoraUtils.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \nID: {superWeaponID} \nName: {superWeaponName} \nLocation:{data.SpecialPlace.Location.X},{data.SpecialPlace.Location.Y}");
         }
-
         protected void DoSpecialPlace(int senderHouseIndex,int id,CellStruct location)
         {
             try
@@ -217,7 +601,7 @@ namespace Extension.CoraExtension
         // 定义数据长度
         
         // 定义事件名称（用于调试）
-        public override string Name => "自定义生产完成事件";
+        public override string Name => "自定义超武充能完成事件";
 
         public override uint Lenth => (uint)sizeof(EventData);
 
@@ -231,7 +615,11 @@ namespace Extension.CoraExtension
             // 可以通过 pEvent 获取发送方信息
             var senderHouseIndex = pEvent.Ref.HouseIndex;
             var frame = pEvent.Ref.Frame; 
-
+            Pointer<SuperWeaponTypeClass> pSuperWeaponTypeClass = SuperWeaponTypeClass.ABSTRACTTYPE_ARRAY.Array[data.Unknown_Tuple.Unknown_0]; 
+            string superWeaponName = pSuperWeaponTypeClass.Convert<AbstractTypeClass>().Ref.UIName;
+            string superWeaponID = pSuperWeaponTypeClass.Convert<AbstractTypeClass>().Ref.ID;
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \nID: {superWeaponID} \nName: {superWeaponName}");
+            
             try
             {
                 DoSpecialCharge(senderHouseIndex,data.Unknown_Tuple.Unknown_0);
@@ -264,15 +652,15 @@ namespace Extension.CoraExtension
         }
     }
 
-    unsafe class CoraProduceCompleEventRsp : NetworkHandle<EventData>
+    unsafe class CoraProdutionCompleteEventRsp : NetworkHandle<EventData>
     {
         // 定义事件索引（确保唯一）
-        public override byte Index => (byte)CoraNetworkEvents.CoraProduceComple;
+        public override byte Index => (byte)CoraNetworkEvents.CoraProdutionComplete;
         
         // 定义数据长度
         
         // 定义事件名称（用于调试）
-        public override string Name => "自定义生产完成事件";
+        public override string Name => "自定义工厂建造间隔修改事件";
 
         public override uint Lenth => (uint)sizeof(EventData);
 
@@ -286,15 +674,17 @@ namespace Extension.CoraExtension
             // 可以通过 pEvent 获取发送方信息
             var senderHouseIndex = pEvent.Ref.HouseIndex;
             var frame = pEvent.Ref.Frame; 
-
+            var pTechnoType = TechnoTypeClass.GetByTypeAndIndex((AbstractType)data.Production.RTTI_ID, data.Production.Heap_ID);
+            var pAbstractTypeClass = pTechnoType.Convert<AbstractTypeClass>();
+            CoraLogger.LogEx($"Received event: {Name} with data: \nFrame:{frame} \nSenderHouseIndex:{senderHouseIndex} \n HeapID: {data.Production.Heap_ID} \nName: {pAbstractTypeClass.Ref.UIName} \nID: {pAbstractTypeClass.Ref.ID} \nIsNaval:{data.Production.IsNaval} \nRTTI_ID:{(AbstractType)data.Production.RTTI_ID}");
             try
             {
-                DoProduceComple(pEvent.Ref.HouseIndex,(AbstractType)data.Production.RTTI_ID,data.Production.Heap_ID,(data.Production.IsNaval == 1 )?true:false);
+                DoProduceComplete(pEvent.Ref.HouseIndex,(AbstractType)data.Production.RTTI_ID,data.Production.Heap_ID,(data.Production.IsNaval == 1 )?true:false);
             }catch (Exception ex){
                 Logger.PrintException(ex);
             }
         }
-        protected bool DoProduceComple(int senderHouseIndex, AbstractType abs, int heapId,bool isNaval)
+        protected bool DoProduceComplete(int senderHouseIndex, AbstractType abs, int heapId,bool isNaval)
         {
             Pointer<TechnoTypeClass> pTechnoType = TechnoTypeClass.GetByTypeAndIndex(abs,heapId);
             Pointer<BuildingTypeClass> pBuilding =  pTechnoType.Convert<BuildingTypeClass>();
@@ -333,18 +723,10 @@ namespace Extension.CoraExtension
                 case AbstractType.InfantryType:
                     pFactory = pHouse.Ref.PrimaryForInfantry;
                 break;
-                
-                    
-                    
             }
 
-            if (pFactory.IsNull)
-            {
-                return false;   
-            }
-            // pFactory.Ref.Production.Step = 54;
             
-            return true;
+            return FactoryClass.CompleteProdution(pFactory);
 
         }
     }
@@ -361,9 +743,10 @@ namespace Extension.CoraExtension
     {
         CoraPlace = 0x30,
         CoraSpecialPlace = 0x31,
-        CoraProduceComple = 0x32,
+        CoraProdutionComplete = 0x32,
         CoraMoneyChange = 0x33,
         CoraSpecialCharge = 0x34,
+        CoraMoneySync = 0x35,
       
     }
 

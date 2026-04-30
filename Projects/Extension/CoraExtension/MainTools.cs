@@ -58,6 +58,7 @@ namespace Extension.CoraExtension
         #region MainTools_TOR
         public MainTools()
         {
+            CoraLogger.HookLogger();
             #region 生命周期事件注册
             SessionExt.GameBattleFirstResume += GameBattleFirstResume;
             SessionExt.Start += Start;
@@ -103,8 +104,8 @@ namespace Extension.CoraExtension
                 }
             };
 
-            // 在工厂类的生产进度增加时触发的回调
-            FactoryClass.ProgressAddCallback += (factory) =>
+         
+            FactoryClass.ProgressUpdateCallback += (factory) =>
             {
                 if (factory.IsNull)
                 {
@@ -120,11 +121,31 @@ namespace Extension.CoraExtension
 
                 if (factory.Ref.Owner  == HouseClass.Player)
                 {
-                    
+                    if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("InstantConstruction", false))
+                    {
+                        AbstractType abstractType = factory.Ref.Object.Ref.BaseAbstract.WhatAmI();
+                        string id = factory.Ref.Object.Ref.Type.Convert<AbstractTypeClass>().Ref.ID;
+                        bool isNaval = factory.Ref.Object.Ref.Type.Ref.IsNaval;
+                        int index = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, id);
+                        NetworkHandle<Production>.Send(
+                            (byte)CoraNetworkEvents.CoraProdutionComplete,
+                            new Production
+                            {
+                                RTTI_ID = (int)abstractType,
+                                Heap_ID = index,
+                                IsNaval = isNaval ? 1 : 0,
+                            }
+                        );
+                    }
+                    // Logger.Log($"玩家工厂Duration: {factory.Ref.Production.Timer.Duration}");
+                }else
+                {
+                    string targetTag = factory.Ref.Owner.Ref.ControlledByHuman() ? "远程玩家" : "AI";
+                    string enemyTag = factory.Ref.Owner.Ref.IsAlliedWith(HouseClass.Player)? "盟友":"敌人";
+                    // Logger.Log($"{targetTag} {enemyTag} 工厂Duration: {factory.Ref.Production.Timer.Duration}");
                 }
-                
             };
-
+         
             // 在工厂类被创建时触发的回调
             FactoryClass.CreateCallback += (factory) =>
             {
@@ -142,22 +163,6 @@ namespace Extension.CoraExtension
 
                 if (factory.Ref.Owner == HouseClass.Player)
                 {
-                    if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("InstantConstruction", false))
-                    {
-                        AbstractType abstractType = factory.Ref.Object.Ref.BaseAbstract.WhatAmI();
-                        string id = factory.Ref.Object.Ref.Type.Convert<AbstractTypeClass>().Ref.ID;
-                        bool isNaval = factory.Ref.Object.Ref.Type.Ref.IsNaval;
-                        int index = TechnoTypeClass.GetIndexByAbstractTypeAndID(abstractType, id);
-                        NetworkHandle<Production>.Send(
-                            (byte)CoraNetworkEvents.CoraProduceComple,
-                            new Production
-                            {
-                                RTTI_ID = (int)abstractType,
-                                Heap_ID = index,
-                                IsNaval = isNaval ? 1 : 0
-                            }
-                        );
-                    }
                     // Logger.Log($"玩家的工厂类被创建了！所属阵营：{factory.Ref.Owner.Ref.Type.Ref.Base.ID} ^w^");
                     MessageListClass.Instance.PrintMessage($"玩家 {factory.Ref.Owner.Ref.Type.Ref.Base.UIName}   开始建造 {factory.Ref.Object.Ref.Type.Convert<AbstractTypeClass>().Ref.UIName } ^w^", (ColorSchemeIndex)factory.Ref.Owner.Ref.Type.Ref.ColorSchemeIndex,3*60);
                     

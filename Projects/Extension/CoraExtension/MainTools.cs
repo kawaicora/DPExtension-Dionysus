@@ -324,36 +324,11 @@ namespace Extension.CoraExtension
                 #endregion
                 if (SessionClass.IsStandalone() || CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IsOnlineBattleDangerFunctionEnable",false))
                 {
-                    HouseClass.Player.Ref.IQLevel = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IQLevel",(uint)0);  
-                    HouseClass.Player.Ref.IQLevel2 = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IQLevel2",(uint)0);
+                    // HouseClass.Player.Ref.IQLevel = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IQLevel",(uint)0);  
+                    // HouseClass.Player.Ref.IQLevel2 = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IQLevel2",(uint)0);
                     if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("SuperweaponNoWait",false))
                     {
-                        for (var index = 0 ; index < HouseClass.Player.Ref.Supers.Count;index++)
-                        {
-                            try
-                            {
-                                if (HouseClass.Player.Ref.Supers[index].IsNull)
-                                {
-                                    continue;
-                                }
-                                NetworkHandle<UnknownTuple>.Send(
-                                    (byte)CoraNetworkEvents.CoraSpecialCharge,
-                                    new UnknownTuple
-                                    {
-                                        Unknown_0 = index,
-
-                                    }
-                                );
-                            }catch(Exception ex)
-                            {
-                                Logger.PrintException(ex);
-                            }
-                            
-                        }
-                        foreach (var item in HouseClass.Player.Ref.Supers)
-                        {
-                            
-                        }
+                        coroutines.Add(_coroutineSystem.StartCoroutine(ChargeSuperWeapon()));
                     }
                     if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("InitialMoney",0) > 0)
                     {
@@ -409,8 +384,38 @@ namespace Extension.CoraExtension
             
             //在组件被创建时执行一次
         }
-        
-        #endregion 
+
+        private IEnumerator ChargeSuperWeapon()
+        {
+            while (true)
+            {
+                for (var index = 0 ; index < HouseClass.Player.Ref.Supers.Count;index++)
+                {
+                    try
+                    {
+                        if (HouseClass.Player.Ref.Supers[index].IsNull)
+                        {
+                            continue;
+                        }
+                        NetworkHandle<UnknownTuple>.Send(
+                            (byte)CoraNetworkEvents.CoraSpecialCharge,
+                            new UnknownTuple
+                            {
+                                Unknown_0 = index,
+
+                            }
+                        );
+                    }catch(Exception ex)
+                    {
+                        Logger.PrintException(ex);
+                    }
+                    yield return new WaitForFrames(Game.CurrentFrameRate *1);
+                }
+               
+            }
+        }
+
+        #endregion
 
         private static readonly IntPtr GetPlayerNameAddr = new IntPtr(0x7350C0); 
         public unsafe static AnsiString GetPlayerName(IntPtr p)

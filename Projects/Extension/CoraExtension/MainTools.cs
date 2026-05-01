@@ -324,8 +324,6 @@ namespace Extension.CoraExtension
                 #endregion
                 if (SessionClass.IsStandalone() || CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IsOnlineBattleDangerFunctionEnable",false))
                 {
-                    // HouseClass.Player.Ref.IQLevel = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IQLevel",(uint)0);  
-                    // HouseClass.Player.Ref.IQLevel2 = CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("IQLevel2",(uint)0);
                     if (CoraUtils.MainToolsConfig("PlayerBaseConfig").Get("SuperweaponNoWait",false))
                     {
                         coroutines.Add(_coroutineSystem.StartCoroutine(ChargeSuperWeapon()));

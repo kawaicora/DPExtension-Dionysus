@@ -425,7 +425,13 @@ namespace Extension.CoraExtension
                 Logger.Log($"生成{sUnitName}失败 pTechno is NULL");
                 return false;
             }
-            return TechnoPlacer.PlaceTechnoNear(pTechnoType,pHouse,placeCoords,false);
+            AbstractType abstractType = pTechno.Ref.BaseAbstract.WhatAmI();
+            bool buildUp = false; // 是否播放建造动画
+            if (abstractType == AbstractType.Building || abstractType == AbstractType.BuildingType)
+            {  //建筑一般具有建筑动画
+                buildUp = true;
+            }
+            return TechnoPlacer.PlaceTechnoNear(pTechnoType,pHouse,placeCoords,buildUp);
             
         }
     }

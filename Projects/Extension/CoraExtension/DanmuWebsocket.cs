@@ -72,7 +72,7 @@ namespace Extension.CoraExtension {
             while (true)
             {
                 OnGift?.Invoke("热心测试员", giftName, random.Next(100).ToString());
-                yield return CoroutineUtils.WaitForSeconds(random.Next(5,10));  // 等待下一帧再继续执行下一个礼物
+                yield return new WaitForFrames((int)Game.CurrentFrameRate * (int)random.Next(5,10));  // 等待下一帧再继续执行下一个礼物
             }
         }
 
@@ -85,7 +85,7 @@ namespace Extension.CoraExtension {
             while (true)
             {
                 OnChat?.Invoke("热心测试员", content);
-                yield return CoroutineUtils.WaitForSeconds(random.Next(5,10)); 
+                yield return new WaitForFrames((int)Game.CurrentFrameRate * (int)random.Next(5,10)); 
             }
         }
 

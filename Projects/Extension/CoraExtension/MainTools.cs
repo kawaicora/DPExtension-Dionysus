@@ -482,7 +482,7 @@ namespace Extension.CoraExtension
                 var runTask = DouyinDanmuWebSocket.instance.Run();
                 while (!runTask.IsCompleted)
                 {
-                    yield return CoroutineUtils.WaitForSeconds(0.5);  // 等待直到任务完成
+                    yield return new WaitForFrames(Game.CurrentFrameRate/4 );  // 0.25s
                 }
             }
         }
